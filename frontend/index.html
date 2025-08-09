@@ -487,9 +487,11 @@ The more detailed the job description, the better your customized resume will be
                     
                     <div style="background: white; padding: 20px; border-radius: 10px;">
                         <h3 style="color: #2c3e50;">💼 Job Analysis</h3>
-                        <p><strong>Word Count:</strong> ${jobData.analysis.word_count}</p>
-                        <p><strong>Experience Level:</strong> ${jobData.analysis.estimated_experience_level}</p>
-                        <p><strong>Found Skills:</strong> ${jobData.analysis.found_skills.join(', ') || 'None detected'}</p>
+                        <p><strong>Word Count:</strong> ${jobData.enhanced_analysis?.basic_metrics?.word_count || 'N/A'}</p>
+<p><strong>Experience Level:</strong> ${jobData.enhanced_analysis?.basic_metrics?.detected_experience_level || 'N/A'}</p>
+<p><strong>Found Skills:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.entities?.technologies?.join(', ') || 'None detected'}</p>
+<p><strong>Sentiment:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.sentiment?.tone || 'N/A'}</p>
+<p><strong>Readability:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.readability?.complexity || 'N/A'}</p>
                         <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 0.9rem;">
                             <strong>Preview:</strong><br>
                             ${jobData.job_description_preview}
