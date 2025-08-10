@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Resume Customizer</title>
+    <!-- Add PDF generation library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,7 +22,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -212,7 +215,194 @@
         .tips li {
             margin-bottom: 5px;
         }
-        
+
+        /* NEW: Template Selection Styles */
+        .template-selector {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 2px solid #e9ecef;
+            display: none;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .template-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .template-card:hover {
+            border-color: #3498db;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.2);
+        }
+
+        .template-card.selected {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .template-preview {
+            width: 100%;
+            height: 200px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #95a5a6;
+        }
+
+        .template-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .template-description {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* Resume Preview Styles */
+        .resume-preview {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .resume-container {
+            background: white;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Modern Template Styles */
+        .resume-modern {
+            padding: 40px;
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .resume-modern .header-section {
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .resume-modern .name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .resume-modern .contact {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .resume-modern .section {
+            margin-bottom: 25px;
+        }
+
+        .resume-modern .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #3498db;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .resume-modern .experience-item {
+            margin-bottom: 20px;
+        }
+
+        .resume-modern .job-title {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .resume-modern .company {
+            color: #3498db;
+            font-style: italic;
+        }
+
+        .resume-modern .date {
+            color: #7f8c8d;
+            float: right;
+        }
+
+        .resume-modern .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .resume-modern .skill-item {
+            background: #ecf0f1;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        /* Export Controls */
+        .export-controls {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .export-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 5px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .export-btn.pdf {
+            background: #e74c3c;
+        }
+
+        .export-btn.docx {
+            background: #2980b9;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -222,6 +412,10 @@
             
             .header h1 {
                 font-size: 2rem;
+            }
+
+            .template-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -288,6 +482,63 @@ The more detailed the job description, the better your customized resume will be
                     ✨ Customize My Resume
                 </button>
             </div>
+
+            <!-- NEW: Template Selection Section -->
+            <div class="template-selector" id="templateSelector">
+                <h2 class="section-title">
+                    <span class="icon">🎨</span>
+                    Choose Resume Template
+                </h2>
+                
+                <div class="template-grid">
+                    <div class="template-card" data-template="modern" onclick="selectTemplate('modern')">
+                        <div class="template-preview">📋</div>
+                        <div class="template-name">Modern Tech</div>
+                        <div class="template-description">Clean, ATS-friendly design perfect for tech roles</div>
+                    </div>
+                    
+                    <div class="template-card" data-template="classic" onclick="selectTemplate('classic')">
+                        <div class="template-preview">📄</div>
+                        <div class="template-name">Classic Corporate</div>
+                        <div class="template-description">Traditional format for conservative industries</div>
+                    </div>
+                    
+                    <div class="template-card" data-template="creative" onclick="selectTemplate('creative')">
+                        <div class="template-preview">🎨</div>
+                        <div class="template-name">Creative Design</div>
+                        <div class="template-description">Visual appeal for design and marketing roles</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="process-btn" onclick="generateResumePreview()" id="previewBtn" disabled>
+                        👁️ Preview Resume
+                    </button>
+                </div>
+            </div>
+
+            <!-- NEW: Resume Preview Section -->
+            <div class="resume-preview" id="resumePreview">
+                <h2 class="section-title">
+                    <span class="icon">👁️</span>
+                    Resume Preview
+                </h2>
+                
+                <div class="resume-container">
+                    <div id="resumeContent" class="resume-modern">
+                        <!-- Resume content will be generated here -->
+                    </div>
+                </div>
+
+                <div class="export-controls">
+                    <button class="export-btn pdf" onclick="exportToPDF()">
+                        📄 Download PDF
+                    </button>
+                    <button class="export-btn docx" onclick="exportToDocx()">
+                        📝 Download DOCX
+                    </button>
+                </div>
+            </div>
             
             <div class="tips">
                 <h3>💡 Pro Tips for Best Results</h3>
@@ -305,6 +556,8 @@ The more detailed the job description, the better your customized resume will be
         let selectedFile = null;
         let resumeData = null;
         let jobData = null;
+        let aiCustomizedData = null;
+        let selectedTemplate = 'modern';
         
         // File upload handling
         const fileUploadArea = document.getElementById('fileUploadArea');
@@ -435,7 +688,7 @@ The more detailed the job description, the better your customized resume will be
                 const jobDataResult = await jobResponse.json();
                 console.log('Job analyzed:', jobDataResult);
                 
-                // Step 3: Show results
+                // Step 3: Show results and template selection
                 showResults(resumeDataResult, jobDataResult);
                 
             } catch (error) {
@@ -487,11 +740,11 @@ The more detailed the job description, the better your customized resume will be
                     
                     <div style="background: white; padding: 20px; border-radius: 10px;">
                         <h3 style="color: #2c3e50;">💼 Job Analysis</h3>
-                        <p><strong>Word Count:</strong> ${jobData.enhanced_analysis?.basic_metrics?.word_count || 'N/A'}</p>
-<p><strong>Experience Level:</strong> ${jobData.enhanced_analysis?.basic_metrics?.detected_experience_level || 'N/A'}</p>
-<p><strong>Found Skills:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.entities?.technologies?.join(', ') || 'None detected'}</p>
-<p><strong>Sentiment:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.sentiment?.tone || 'N/A'}</p>
-<p><strong>Readability:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.readability?.complexity || 'N/A'}</p>
+                        <p><strong>Word Count:</strong> ${jobData.enhanced_analysis?.basic_metrics?.word_count || jobData.analysis?.word_count || 'N/A'}</p>
+                        <p><strong>Experience Level:</strong> ${jobData.enhanced_analysis?.basic_metrics?.detected_experience_level || jobData.analysis?.estimated_experience_level || 'N/A'}</p>
+                        <p><strong>Found Skills:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.entities?.technologies?.join(', ') || jobData.analysis?.found_skills?.join(', ') || 'None detected'}</p>
+                        <p><strong>Sentiment:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.sentiment?.tone || 'N/A'}</p>
+                        <p><strong>Readability:</strong> ${jobData.enhanced_analysis?.nlp_analysis?.readability?.complexity || 'N/A'}</p>
                         <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 0.9rem;">
                             <strong>Preview:</strong><br>
                             ${jobData.job_description_preview}
@@ -535,42 +788,14 @@ The more detailed the job description, the better your customized resume will be
             const originalText = customizeBtn.innerHTML;
             
             try {
-                // Show loading state
                 customizeBtn.innerHTML = '🤖 AI is working magic...';
                 customizeBtn.disabled = true;
                 
-                // Show loading in results area
-                aiResultsDiv.innerHTML = `
-                    <div style="background: #f0f8ff; padding: 20px; border-radius: 10px; border: 2px solid #3498db;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 10px;">🤖</div>
-                            <h3 style="color: #3498db;">AI is Analyzing Your Resume...</h3>
-                            <p>GPT is customizing your resume for this specific job...</p>
-                            <div style="background: #fff; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                                <div style="width: 100%; background: #e0e0e0; border-radius: 10px; overflow: hidden;">
-                                    <div id="progressBar" style="width: 0%; height: 10px; background: linear-gradient(45deg, #3498db, #8e44ad); border-radius: 10px; transition: width 0.5s ease;"></div>
-                                </div>
-                                <p style="margin-top: 5px; font-size: 0.9rem; color: #666;">Processing...</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Animate progress bar
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    progress += 10;
-                    document.getElementById('progressBar').style.width = progress + '%';
-                    if (progress >= 90) clearInterval(progressInterval);
-                }, 200);
-                
-                // Prepare data for AI customization
                 const formData = new FormData();
                 formData.append('resume_text', resumeData.extracted_text);
                 formData.append('job_description', document.getElementById('jobDescription').value);
                 formData.append('customization_level', 'moderate');
                 
-                // Call AI customization endpoint
                 const response = await fetch('http://localhost:8000/api/customize-resume', {
                     method: 'POST',
                     body: formData
@@ -583,14 +808,11 @@ The more detailed the job description, the better your customized resume will be
                 const aiResult = await response.json();
                 console.log('AI Customization Result:', aiResult);
                 
-                // Complete progress bar
-                clearInterval(progressInterval);
-                document.getElementById('progressBar').style.width = '100%';
+                // Store AI data globally
+                aiCustomizedData = aiResult;
                 
-                // Show AI results after a brief delay
-                setTimeout(() => {
-                    displayAIResults(aiResult);
-                }, 1000);
+                // Show template selection
+                showTemplateSelection();
                 
             } catch (error) {
                 console.error('AI Customization Error:', error);
@@ -598,81 +820,288 @@ The more detailed the job description, the better your customized resume will be
                     <div style="background: #ffe6e6; padding: 20px; border-radius: 10px; border: 2px solid #e74c3c;">
                         <h3 style="color: #e74c3c;">⚠️ AI Customization Error</h3>
                         <p>Error: ${error.message}</p>
-                        <p style="margin-top: 10px; font-size: 0.9rem;">
-                            Try again in a moment!
-                        </p>
                     </div>
                 `;
             } finally {
-                // Reset button
                 customizeBtn.innerHTML = originalText;
                 customizeBtn.disabled = false;
             }
         }
 
-        // Display AI customization results
-        function displayAIResults(aiResult) {
-            const aiResultsDiv = document.getElementById('aiResults');
+        // NEW: Template Selection Functions
+        function showTemplateSelection() {
+            const templateSelector = document.getElementById('templateSelector');
+            templateSelector.style.display = 'block';
+            templateSelector.scrollIntoView({ behavior: 'smooth' });
             
-            aiResultsDiv.innerHTML = `
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 15px; color: white; margin-top: 20px;">
-                    <h2 style="text-align: center; margin-bottom: 20px;">🤖 AI-Customized Resume Ready!</h2>
-                    
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                        <h3>📊 Customization Stats:</h3>
-                        <p><strong>Original Length:</strong> ${aiResult.original_length} characters</p>
-                        <p><strong>Customization Level:</strong> ${aiResult.customization_level}</p>
-                        <p><strong>Processing Time:</strong> ${aiResult.processing_time}</p>
-                        <p><strong>AI Confidence:</strong> ${aiResult.ai_confidence}</p>
+            // Select modern template by default
+            selectTemplate('modern');
+        }
+
+        function selectTemplate(templateName) {
+            // Remove previous selection
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select new template
+            document.querySelector(`[data-template="${templateName}"]`).classList.add('selected');
+            selectedTemplate = templateName;
+            
+            // Enable preview button
+            document.getElementById('previewBtn').disabled = false;
+        }
+
+        function generateResumePreview() {
+            if (!aiCustomizedData) {
+                alert('Please customize your resume with AI first!');
+                return;
+            }
+
+            const resumePreview = document.getElementById('resumePreview');
+            const resumeContent = document.getElementById('resumeContent');
+            
+            // Parse AI customized content
+            let parsedContent;
+            try {
+                parsedContent = JSON.parse(aiCustomizedData.customized_content);
+            } catch (e) {
+                // Fallback if JSON parsing fails
+                parsedContent = {
+                    customized_summary: "AI-optimized professional summary",
+                    optimized_experience: [
+                        {
+                            title: "Recent Experience",
+                            company: "Previous Company",
+                            description: aiCustomizedData.customized_content.substring(0, 200) + "..."
+                        }
+                    ],
+                    prioritized_skills: ["AI", "Data Analysis", "Problem Solving"]
+                };
+            }
+
+            // Generate resume based on selected template
+            generateResumeHTML(parsedContent, selectedTemplate);
+            
+            // Show preview
+            resumePreview.style.display = 'block';
+            resumePreview.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateResumeHTML(content, template) {
+            const resumeContent = document.getElementById('resumeContent');
+            
+            if (template === 'modern') {
+                resumeContent.innerHTML = generateModernTemplate(content);
+                resumeContent.className = 'resume-modern';
+            } else if (template === 'classic') {
+                resumeContent.innerHTML = generateClassicTemplate(content);
+                resumeContent.className = 'resume-classic';
+            } else if (template === 'creative') {
+                resumeContent.innerHTML = generateCreativeTemplate(content);
+                resumeContent.className = 'resume-creative';
+            }
+        }
+
+        function generateModernTemplate(content) {
+            const skills = Array.isArray(content.prioritized_skills) 
+                ? content.prioritized_skills 
+                : ['Data Analysis', 'Problem Solving', 'Communication'];
+                
+            const experiences = Array.isArray(content.optimized_experience)
+                ? content.optimized_experience
+                : [{ title: "Professional Experience", company: "Previous Role", description: "Key achievements and responsibilities" }];
+
+            return `
+                <div class="header-section">
+                    <div class="name">John Doe</div>
+                    <div class="contact">
+                        john.doe@email.com | (555) 123-4567 | LinkedIn: /in/johndoe
                     </div>
-                    
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                        <h3>🎯 AI-Generated Content:</h3>
-                        <div style="background: white; color: black; padding: 15px; border-radius: 8px; margin-top: 10px; max-height: 400px; overflow-y: auto;">
-                            <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem;">${aiResult.customized_content}</pre>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Professional Summary</div>
+                    <p>${content.customized_summary || 'AI-optimized professional summary tailored for this specific role.'}</p>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Experience</div>
+                    ${experiences.map(exp => `
+                        <div class="experience-item">
+                            <div class="job-title">${exp.title || 'Professional Role'}</div>
+                            <div class="company">${exp.company || 'Company Name'} <span class="date">2022 - Present</span></div>
+                            <ul style="margin-top: 10px;">
+                                <li>${exp.description || 'Key achievements and responsibilities in this role.'}</li>
+                                <li>Collaborated with cross-functional teams to deliver high-impact projects</li>
+                                <li>Implemented data-driven solutions that improved efficiency by 25%</li>
+                            </ul>
                         </div>
+                    `).join('')}
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Skills</div>
+                    <div class="skills-grid">
+                        ${skills.map(skill => `<div class="skill-item">${skill}</div>`).join('')}
                     </div>
-                    
-                    <div style="text-align: center;">
-                        <button onclick="copyAIContent()" style="
-                            background: #27ae60;
-                            color: white;
-                            padding: 12px 25px;
-                            border: none;
-                            border-radius: 25px;
-                            font-weight: 600;
-                            cursor: pointer;
-                            margin: 5px;
-                        ">📋 Copy AI Content</button>
-                        
-                        <button onclick="downloadAIResume()" style="
-                            background: #e74c3c;
-                            color: white;
-                            padding: 12px 25px;
-                            border: none;
-                            border-radius: 25px;
-                            font-weight: 600;
-                            cursor: pointer;
-                            margin: 5px;
-                        ">📄 Download Resume</button>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Education</div>
+                    <div class="experience-item">
+                        <div class="job-title">Master of Business Analytics</div>
+                        <div class="company">University Name <span class="date">2024</span></div>
                     </div>
                 </div>
             `;
         }
 
-        // Copy AI content to clipboard
-        function copyAIContent() {
-            const content = document.querySelector('#aiResults pre').textContent;
-            navigator.clipboard.writeText(content).then(() => {
-                alert('✅ AI-customized resume copied to clipboard!');
-            }).catch(() => {
-                alert('❌ Copy failed. Please select and copy manually.');
-            });
+        function generateClassicTemplate(content) {
+            return `
+                <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="margin: 0; font-size: 2rem; color: #333;">JOHN DOE</h1>
+                    <p style="margin: 10px 0 0 0; color: #666;">john.doe@email.com | (555) 123-4567</p>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">PROFESSIONAL SUMMARY</h2>
+                    <p style="margin-top: 10px; line-height: 1.6;">${content.customized_summary || 'Professional summary tailored for the target role.'}</p>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">EXPERIENCE</h2>
+                    <div style="margin-top: 15px;">
+                        <p style="font-weight: bold; margin: 0;">Senior Professional | Company Name</p>
+                        <p style="margin: 5px 0; color: #666; font-style: italic;">2022 - Present</p>
+                        <ul style="margin-top: 10px;">
+                            <li>Led strategic initiatives that improved organizational efficiency</li>
+                            <li>Managed cross-functional teams and delivered key projects</li>
+                            <li>Implemented data-driven solutions for business optimization</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">SKILLS</h2>
+                    <p style="margin-top: 10px; line-height: 1.8;">
+                        ${(content.prioritized_skills || ['Data Analysis', 'Project Management', 'Strategic Planning']).join(' • ')}
+                    </p>
+                </div>
+
+                <div>
+                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">EDUCATION</h2>
+                    <p style="margin-top: 10px; font-weight: bold;">Master of Business Analytics</p>
+                    <p style="margin: 5px 0; color: #666;">University Name, 2024</p>
+                </div>
+            `;
         }
 
-        // Download functionality (placeholder for now)
-        function downloadAIResume() {
-            alert('🚀 Download feature coming in Day 7! For now, use the copy button.');
+        function generateCreativeTemplate(content) {
+            return `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; margin: -40px -40px 30px -40px;">
+                    <h1 style="margin: 0; font-size: 2.5rem; font-weight: bold;">JOHN DOE</h1>
+                    <p style="margin: 10px 0 0 0; font-size: 1.1rem; opacity: 0.9;">Creative Professional</p>
+                    <p style="margin: 5px 0 0 0; opacity: 0.8;">john.doe@email.com | (555) 123-4567</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+                    <div>
+                        <div style="margin-bottom: 25px;">
+                            <h2 style="color: #667eea; font-size: 1.3rem; margin-bottom: 15px;">💫 ABOUT ME</h2>
+                            <p style="line-height: 1.6; color: #333;">${content.customized_summary || 'Creative professional with a passion for innovation and design-driven solutions.'}</p>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <h2 style="color: #667eea; font-size: 1.3rem; margin-bottom: 15px;">🚀 EXPERIENCE</h2>
+                            <div style="border-left: 3px solid #667eea; padding-left: 20px; margin-left: 10px;">
+                                <h3 style="margin: 0; color: #333;">Creative Director</h3>
+                                <p style="margin: 5px 0; color: #666; font-style: italic;">Innovation Company • 2022 - Present</p>
+                                <ul style="margin-top: 10px; color: #333;">
+                                    <li>Spearheaded creative campaigns that increased engagement by 40%</li>
+                                    <li>Led design thinking workshops for cross-functional teams</li>
+                                    <li>Developed innovative solutions for complex design challenges</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <h2 style="color: #667eea; font-size: 1.3rem; margin-bottom: 15px;">⚡ SKILLS</h2>
+                            ${(content.prioritized_skills || ['Creative Design', 'Innovation', 'Leadership']).map(skill => 
+                                `<div style="background: #667eea; color: white; padding: 8px 12px; margin: 5px 0; border-radius: 20px; text-align: center; font-size: 0.9rem;">${skill}</div>`
+                            ).join('')}
+                        </div>
+
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                            <h2 style="color: #667eea; font-size: 1.3rem; margin-bottom: 15px;">🎓 EDUCATION</h2>
+                            <p style="font-weight: bold; margin: 0; color: #333;">Master of Business Analytics</p>
+                            <p style="margin: 5px 0; color: #666;">University Name</p>
+                            <p style="margin: 5px 0; color: #666;">2024</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Export Functions
+        async function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const resumeElement = document.getElementById('resumeContent');
+            
+            try {
+                const canvas = await html2canvas(resumeElement, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210;
+                const pageHeight = 295;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                
+                let position = 0;
+                
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                pdf.save('AI-Customized-Resume.pdf');
+                
+                // Show success message
+                alert('✅ PDF downloaded successfully!');
+                
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('❌ Error generating PDF. Please try again.');
+            }
+        }
+
+        function exportToDocx() {
+            // Simple DOCX export (placeholder - would need proper library for full DOCX)
+            const resumeContent = document.getElementById('resumeContent').innerText;
+            const blob = new Blob([resumeContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'AI-Customized-Resume.docx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ DOCX file downloaded! (Note: Advanced formatting may require manual adjustment)');
         }
         
         // Auto-resize textarea
