@@ -33,7 +33,7 @@ app.add_middleware(
 # Initialize OpenAI client
 # For now, we'll set the API key directly in code (you'll move this to environment variable later)
 openai_client = OpenAI(
-    api_key="YOUR_ACTUAL_API_KEY_HERE"  # Replace with your real key  # Secure way  # Replace with your actual API key
+    api_key="API KEY HERE"  # Replace with your real key  # Secure way  # Replace with your actual API key
 )
 # Load spaCy model
 try:
@@ -502,7 +502,357 @@ async def test_gpt():
             "error": str(e),
             "message": "GPT integration failed"
         }
+# Add these new endpoints to your existing main.py (at the bottom, before if __name__ == "__main__":)
 
+# NEW: Cover Letter Generation Endpoint
+@app.post("/api/generate-cover-letter")
+async def generate_cover_letter(
+    resume_text: str = Form(...),
+    job_description: str = Form(...),
+    company_name: str = Form(...),
+    position_title: str = Form(...),
+    tone: str = Form(default="professional")  # professional, enthusiastic, confident
+):
+    """
+    Generate AI-powered cover letter based on resume and job description
+    """
+    try:
+        cover_letter_prompt = f"""
+        You are an expert career coach and professional writer. Create a compelling cover letter based on the provided information.
+
+        CANDIDATE'S RESUME:
+        {resume_text[:1500]}  # Limit for API efficiency
+
+        TARGET JOB:
+        Company: {company_name}
+        Position: {position_title}
+        Job Description: {job_description}
+
+        TONE: {tone}
+
+        Please create a professional cover letter with:
+        1. Engaging opening paragraph that shows enthusiasm for the specific role
+        2. 2-3 middle paragraphs highlighting relevant experience and skills
+        3. Strong closing paragraph with call to action
+        4. Proper business letter formatting
+        5. Personalized content referencing the company and role
+
+        Keep it concise (3-4 paragraphs), professional, and compelling.
+        Make sure it complements the resume without repeating everything.
+
+        Format as JSON with these keys:
+        - opening_paragraph
+        - body_paragraphs (array)
+        - closing_paragraph
+        - suggested_subject_line
+        - key_highlights (array of 3-4 main selling points)
+        """
+
+        gpt_response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are an expert career coach with 15+ years of experience writing compelling cover letters that get interviews."},
+                {"role": "user", "content": cover_letter_prompt}
+            ],
+            max_tokens=1000,
+            temperature=0.4
+        )
+
+        cover_letter_content = gpt_response.choices[0].message.content
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Cover letter generated successfully!",
+                "company_name": company_name,
+                "position_title": position_title,
+                "tone": tone,
+                "cover_letter_content": cover_letter_content,
+                "estimated_reading_time": "45-60 seconds",
+                "ai_confidence": "high"
+            }
+        )
+
+    except Exception as e:
+        print(f"Cover letter generation error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating cover letter: {str(e)}"
+        )
+
+# NEW: Resume Scoring and Analytics Endpoint
+@app.post("/api/analyze-resume-score")
+async def analyze_resume_score(
+    resume_text: str = Form(...),
+    job_description: str = Form(...),
+    target_keywords: str = Form(default="")
+):
+    """
+    Provide detailed resume scoring and improvement analytics
+    """
+    try:
+        scoring_prompt = f"""
+        As an expert ATS system analyst and recruiting specialist, provide a comprehensive score for this resume against the job requirements.
+
+        RESUME CONTENT:
+        {resume_text[:2000]}
+
+        JOB REQUIREMENTS:
+        {job_description}
+
+        TARGET KEYWORDS: {target_keywords}
+
+        Provide detailed scoring analysis as JSON:
+        {{
+            "overall_score": "percentage out of 100",
+            "category_scores": {{
+                "keyword_match": "percentage",
+                "experience_relevance": "percentage", 
+                "skills_alignment": "percentage",
+                "format_optimization": "percentage",
+                "ats_compatibility": "percentage"
+            }},
+            "strengths": ["list of 3-4 strong points"],
+            "improvement_areas": ["list of 3-4 specific improvements needed"],
+            "missing_keywords": ["important keywords not found in resume"],
+            "keyword_frequency": {{
+                "high_value_keywords": ["keywords that appear multiple times"],
+                "underused_keywords": ["important keywords that should appear more"]
+            }},
+            "ats_recommendations": ["specific formatting and content suggestions"],
+            "competitive_analysis": {{
+                "estimated_ranking": "how this resume would rank against other candidates",
+                "interview_likelihood": "low/medium/high based on current state"
+            }}
+        }}
+        """
+
+        gpt_response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are an expert ATS analyst with deep knowledge of recruiting systems and candidate evaluation."},
+                {"role": "user", "content": scoring_prompt}
+            ],
+            max_tokens=1200,
+            temperature=0.2
+        )
+
+        scoring_analysis = gpt_response.choices[0].message.content
+
+        # Additional basic analysis
+        resume_word_count = len(resume_text.split())
+        job_word_count = len(job_description.split())
+        
+        # Simple keyword matching for backup scoring
+        job_words = set(job_description.lower().split())
+        resume_words = set(resume_text.lower().split())
+        common_words = job_words.intersection(resume_words)
+        basic_match_score = min(100, int((len(common_words) / len(job_words)) * 100))
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Resume scoring analysis complete!",
+                "detailed_analysis": scoring_analysis,
+                "basic_metrics": {
+                    "resume_word_count": resume_word_count,
+                    "job_description_word_count": job_word_count,
+                    "basic_keyword_match": f"{basic_match_score}%",
+                    "analysis_timestamp": "2025-08-08"
+                },
+                "improvement_priority": "high" if basic_match_score < 60 else "medium" if basic_match_score < 80 else "low"
+            }
+        )
+
+    except Exception as e:
+        print(f"Resume scoring error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error analyzing resume score: {str(e)}"
+        )
+
+# NEW: LinkedIn Profile Integration Endpoint
+@app.post("/api/linkedin-integration")
+async def linkedin_integration(
+    linkedin_url: str = Form(...),
+    extraction_type: str = Form(default="basic")  # basic, detailed, skills_only
+):
+    """
+    Simulate LinkedIn profile data extraction (placeholder for actual LinkedIn API)
+    """
+    try:
+        # This is a simulation - real LinkedIn integration would require OAuth and API keys
+        simulated_linkedin_data = {
+            "profile_url": linkedin_url,
+            "extraction_type": extraction_type,
+            "extracted_data": {
+                "headline": "Business Analytics Professional | Data-Driven Decision Making",
+                "summary": "Results-driven professional with expertise in data analysis and business intelligence",
+                "experience": [
+                    {
+                        "title": "Business Analyst",
+                        "company": "Previous Company",
+                        "duration": "2022 - Present",
+                        "description": "Led data analysis initiatives and business process optimization"
+                    }
+                ],
+                "skills": [
+                    "Data Analysis", "Business Intelligence", "SQL", "Python", 
+                    "Tableau", "Power BI", "Excel", "Project Management"
+                ],
+                "education": [
+                    {
+                        "degree": "Master of Business Analytics",
+                        "institution": "University Name",
+                        "year": "2024"
+                    }
+                ],
+                "certifications": [
+                    "Microsoft Power BI Certification",
+                    "Google Analytics Certified"
+                ]
+            },
+            "integration_suggestions": [
+                "Add LinkedIn headline to resume summary",
+                "Include recent certifications in skills section",
+                "Highlight quantified achievements from experience",
+                "Optimize skills section based on LinkedIn endorsements"
+            ]
+        }
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "LinkedIn profile data extracted successfully!",
+                "profile_data": simulated_linkedin_data,
+                "integration_options": {
+                    "auto_populate": "Automatically fill resume sections",
+                    "merge_skills": "Combine LinkedIn skills with resume",
+                    "sync_experience": "Update experience section",
+                    "import_summary": "Import LinkedIn summary"
+                },
+                "note": "This is a simulation - real LinkedIn integration requires API access"
+            }
+        )
+
+    except Exception as e:
+        print(f"LinkedIn integration error: {str(e)}")
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": False,
+                "message": "LinkedIn integration simulation",
+                "error": str(e),
+                "note": "This endpoint simulates LinkedIn integration functionality"
+            }
+        )
+
+# NEW: User Feedback and Rating Endpoint
+@app.post("/api/submit-feedback")
+async def submit_feedback(
+    rating: int = Form(...),  # 1-5 stars
+    feedback_text: str = Form(...),
+    feature_used: str = Form(...),  # resume_customization, template_selection, pdf_export, etc.
+    improvement_suggestions: str = Form(default=""),
+    user_email: str = Form(default="anonymous")
+):
+    """
+    Collect user feedback and ratings for product improvement
+    """
+    try:
+        feedback_data = {
+            "rating": rating,
+            "feedback_text": feedback_text,
+            "feature_used": feature_used,
+            "improvement_suggestions": improvement_suggestions,
+            "user_email": user_email if user_email != "anonymous" else "anonymous",
+            "timestamp": "2025-08-08",
+            "session_id": "generated_session_id"
+        }
+
+        # In a real application, this would save to a database
+        # For now, we'll just log it and return confirmation
+        print(f"User Feedback Received: {feedback_data}")
+
+        # Generate response based on feedback
+        if rating >= 4:
+            response_message = "Thank you for the positive feedback! We're thrilled you're loving the tool."
+        elif rating == 3:
+            response_message = "Thanks for the feedback! We're always working to improve your experience."
+        else:
+            response_message = "Thank you for the honest feedback. We'll use this to make the tool better!"
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Feedback submitted successfully!",
+                "response": response_message,
+                "feedback_id": "fb_" + str(hash(feedback_text))[:8],
+                "follow_up": {
+                    "will_contact": rating <= 2,  # Follow up on poor ratings
+                    "estimated_improvements": "Next update in 1-2 weeks",
+                    "beta_testing": "Would you like to test new features early?"
+                }
+            }
+        )
+
+    except Exception as e:
+        print(f"Feedback submission error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error submitting feedback: {str(e)}"
+        )
+
+# NEW: Advanced Template Customization Endpoint
+@app.post("/api/customize-template")
+async def customize_template(
+    template_name: str = Form(...),
+    color_scheme: str = Form(default="default"),  # default, blue, green, purple, dark
+    font_family: str = Form(default="Arial"),     # Arial, Times, Calibri, Modern
+    layout_style: str = Form(default="standard"), # standard, sidebar, creative
+    section_order: str = Form(default="standard") # standard, skills_first, experience_first
+):
+    """
+    Generate customized template configurations
+    """
+    try:
+        customization_config = {
+            "template_name": template_name,
+            "customizations": {
+                "color_scheme": color_scheme,
+                "font_family": font_family,
+                "layout_style": layout_style,
+                "section_order": section_order
+            },
+            "css_modifications": {
+                "primary_color": "#3498db" if color_scheme == "blue" else "#27ae60" if color_scheme == "green" else "#8e44ad" if color_scheme == "purple" else "#2c3e50",
+                "font_stack": f"'{font_family}', sans-serif",
+                "layout_grid": "sidebar" if layout_style == "sidebar" else "traditional"
+            },
+            "preview_ready": True
+        }
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Template customization ready!",
+                "customization": customization_config,
+                "estimated_generation_time": "2-3 seconds",
+                "preview_available": True
+            }
+        )
+
+    except Exception as e:
+        print(f"Template customization error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error customizing template: {str(e)}"
+        )
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
