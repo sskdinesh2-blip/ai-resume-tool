@@ -1233,17 +1233,61 @@ The more detailed the job description, the better your AI-customized resume will
                     </div>
                 </div>
 
-                <div class="export-controls">
-                    <button class="export-btn pdf" onclick="exportToPDF()">
-                        📄 Download PDF
-                    </button>
-                    <button class="export-btn docx" onclick="exportToDocx()">
-                        📝 Download DOCX
-                    </button>
-                    <button class="export-btn cover-letter" onclick="exportCoverLetter()" id="exportCoverLetterBtn" style="display: none;">
-                        💌 Download Cover Letter
-                    </button>
-                </div>
+               <!-- ENHANCED EXPORT CONTROLS - Day 7 Upgrade -->
+<div class="export-controls" style="text-align: center; margin-top: 30px; padding: 30px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 15px;">
+    <h3 style="color: #2c3e50; margin-bottom: 20px; font-size: 1.3rem;">📤 Export Your Resume</h3>
+    
+    <!-- Main Export Buttons -->
+    <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 20px;">
+        <button class="export-btn pdf" onclick="exportToPDF()" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px 25px; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;">
+            📄 High-Quality PDF
+        </button>
+        
+        <button class="export-btn docx" onclick="exportToDocx()" style="background: linear-gradient(135deg, #2980b9, #1f5f85); color: white; padding: 15px 25px; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;">
+            📝 Enhanced DOCX
+        </button>
+        
+        <button class="export-btn combo" onclick="exportComboPackage()" style="background: linear-gradient(135deg, #8e44ad, #6a1b87); color: white; padding: 15px 25px; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;">
+            📦 Complete Package
+        </button>
+    </div>
+    
+    <!-- Cover Letter Export -->
+    <div id="coverLetterExportSection" style="display: none; margin-bottom: 20px;">
+        <button class="export-btn cover-letter" onclick="exportCoverLetter()" style="background: linear-gradient(135deg, #27ae60, #229954); color: white; padding: 12px 20px; border: none; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+            💌 Cover Letter Only
+        </button>
+    </div>
+    
+    <!-- Export Statistics -->
+    <div style="background: linear-gradient(135deg, #f1c40f, #f39c12); color: white; padding: 15px; border-radius: 10px; margin-top: 20px;">
+        <h4 style="margin-bottom: 10px; font-size: 1rem;">📊 Export Stats</h4>
+        <div style="display: flex; justify-content: space-around; text-align: center;">
+            <div>
+                <div style="font-size: 1.2rem; font-weight: bold;" id="pdfExportCount">0</div>
+                <div style="font-size: 0.8rem; opacity: 0.9;">PDFs Created</div>
+            </div>
+            <div>
+                <div style="font-size: 1.2rem; font-weight: bold;" id="docxExportCount">0</div>
+                <div style="font-size: 0.8rem; opacity: 0.9;">DOCX Files</div>
+            </div>
+            <div>
+                <div style="font-size: 1.2rem; font-weight: bold;" id="totalExportCount">0</div>
+                <div style="font-size: 0.8rem; opacity: 0.9;">Total Exports</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pro Tips -->
+    <div style="background: linear-gradient(135deg, #e8f5e8, #f0fff0); border-left: 4px solid #27ae60; padding: 15px; margin-top: 20px; border-radius: 5px; text-align: left;">
+        <h4 style="color: #27ae60; margin-bottom: 10px;">💡 Pro Export Tips:</h4>
+        <ul style="color: #2c3e50; line-height: 1.6; margin-left: 20px;">
+            <li><strong>PDF:</strong> Best for email attachments and ATS systems</li>
+            <li><strong>DOCX:</strong> Perfect for further editing in Microsoft Word</li>
+            <li><strong>Complete Package:</strong> Downloads both resume and cover letter</li>
+        </ul>
+    </div>
+</div>
             </div>
             
             <!-- Success/Error Messages -->
@@ -1299,6 +1343,7 @@ The more detailed the job description, the better your AI-customized resume will
             updateCoverLetterButton();
             updateAnalyzeButton();
             animateOnLoad();
+            loadExportStats();
             
             // Add event listeners after DOM is loaded
             document.getElementById('resumeFile').addEventListener('change', function() {
@@ -2341,132 +2386,341 @@ The more detailed the job description, the better your AI-customized resume will
         }
         
         // Export Functions
-        async function exportToPDF() {
-            const resumeElement = document.getElementById('resumeContent');
-            
-            if (!resumeElement || !resumeElement.innerHTML.trim()) {
-                showError('Please generate a resume preview first!');
-                return;
-            }
-            
-            showLoading('Generating PDF...');
-            
-            try {
-                const { jsPDF } = window.jspdf;
-                
-                const canvas = await html2canvas(resumeElement, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    width: resumeElement.scrollWidth,
-                    height: resumeElement.scrollHeight
-                });
-                
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                const imgWidth = 210;
-                const pageHeight = 295;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                let heightLeft = imgHeight;
-                
-                let position = 0;
-                
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-                
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-                
-                pdf.save('AI-Customized-Resume.pdf');
-                
-                hideLoading();
-                showSuccess('PDF downloaded successfully!');
-                
-            } catch (error) {
-                console.error('PDF generation error:', error);
-                hideLoading();
-                showError('Failed to generate PDF. Please try again.');
-            }
+        // ENHANCED PDF EXPORT - Replace your existing exportToPDF function
+async function exportToPDF() {
+    const resumeElement = document.getElementById('resumeContent');
+    
+    if (!resumeElement || !resumeElement.innerHTML.trim()) {
+        showError('Please generate a resume preview first!');
+        return;
+    }
+    
+    showLoading('Generating high-quality PDF...');
+    
+    try {
+        const { jsPDF } = window.jspdf;
+        
+        // Enhanced canvas options for better quality
+        const canvas = await html2canvas(resumeElement, {
+            scale: 3, // Higher resolution
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            width: resumeElement.scrollWidth,
+            height: resumeElement.scrollHeight,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: 1200,
+            windowHeight: 1600,
+            removeContainer: true,
+            imageTimeout: 15000,
+            logging: false
+        });
+        
+        // Calculate optimal dimensions
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+            compress: true
+        });
+        
+        // A4 dimensions in mm
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const margin = 10;
+        const contentWidth = pageWidth - (2 * margin);
+        
+        // Calculate scaling
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(contentWidth / (imgWidth * 0.264583), (pageHeight - 2 * margin) / (imgHeight * 0.264583));
+        
+        const scaledWidth = imgWidth * 0.264583 * ratio;
+        const scaledHeight = imgHeight * 0.264583 * ratio;
+        
+        // Center the content
+        const xOffset = (pageWidth - scaledWidth) / 2;
+        const yOffset = margin;
+        
+        // Add image to PDF
+        pdf.addImage(imgData, 'PNG', xOffset, yOffset, scaledWidth, scaledHeight, undefined, 'FAST');
+        
+        // Add metadata
+        pdf.setProperties({
+            title: 'AI-Customized Resume',
+            subject: 'Professional Resume',
+            author: 'AI Resume Customizer Pro',
+            creator: 'AI Resume Tool'
+        });
+        
+        // Generate unique filename with timestamp
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filename = `AI-Resume-${timestamp}-${Math.random().toString(36).substr(2, 5)}.pdf`;
+        
+        // Save the PDF
+        pdf.save(filename);
+        
+        hideLoading();
+        showSuccess(`High-quality PDF "${filename}" downloaded successfully!`);
+        
+        // Update export stats
+        updateExportStats('pdf');
+        
+    } catch (error) {
+        console.error('Enhanced PDF generation error:', error);
+        hideLoading();
+        showError('Failed to generate PDF. Trying fallback method...');
+        
+        // Fallback to basic PDF generation
+        await exportToPDFBasic();
+    }
+}
+
+// FALLBACK PDF EXPORT
+async function exportToPDFBasic() {
+    try {
+        showLoading('Generating PDF with basic method...');
+        
+        const resumeElement = document.getElementById('resumeContent');
+        const { jsPDF } = window.jspdf;
+        
+        const canvas = await html2canvas(resumeElement, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff'
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgWidth = 210;
+        const pageHeight = 295;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        
+        const filename = `AI-Resume-Basic-${Date.now()}.pdf`;
+        pdf.save(filename);
+        
+        hideLoading();
+        showSuccess(`PDF "${filename}" downloaded successfully!`);
+        
+        updateExportStats('pdf');
+        
+    } catch (error) {
+        console.error('Fallback PDF generation failed:', error);
+        hideLoading();
+        showError('PDF generation failed. Please try again or contact support.');
+    }
+}
+
+// ENHANCED DOCX EXPORT - Replace your existing exportToDocx function
+async function exportToDocx() {
+    const resumeContent = document.getElementById('resumeContent');
+    
+    if (!resumeContent || !resumeContent.innerHTML.trim()) {
+        showError('Please generate a resume preview first!');
+        return;
+    }
+    
+    showLoading('Generating enhanced DOCX file...');
+    
+    try {
+        // Extract structured content
+        const sections = extractResumeContent(resumeContent);
+        
+        // Create enhanced DOCX content
+        const docxContent = generateEnhancedDocxContent(sections);
+        
+        // Create blob and download
+        const blob = new Blob([docxContent], { 
+            type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filename = `AI-Resume-${timestamp}.docx`;
+        a.download = filename;
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        hideLoading();
+        showSuccess(`Enhanced DOCX "${filename}" downloaded! Open in Microsoft Word for full formatting.`);
+        
+        updateExportStats('docx');
+        
+    } catch (error) {
+        console.error('Enhanced DOCX export error:', error);
+        hideLoading();
+        showError('Enhanced DOCX export failed. Using basic text export...');
+        
+        // Fallback to basic text export
+        exportToDocxBasic();
+    }
+}
+
+// BASIC DOCX FALLBACK
+function exportToDocxBasic() {
+    const resumeContent = document.getElementById('resumeContent').innerText;
+    const blob = new Blob([resumeContent], { 
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AI-Resume-Basic-${Date.now()}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showSuccess('Basic DOCX file downloaded!');
+    updateExportStats('docx');
+}
+
+// HELPER FUNCTIONS - Add these new functions
+function extractResumeContent(resumeElement) {
+    const sections = {
+        name: '',
+        contact: '',
+        summary: '',
+        experience: [],
+        skills: [],
+        education: '',
+        certifications: ''
+    };
+    
+    // Extract name
+    const nameElement = resumeElement.querySelector('.name');
+    if (nameElement) sections.name = nameElement.textContent.trim();
+    
+    // Extract contact
+    const contactElement = resumeElement.querySelector('.contact');
+    if (contactElement) sections.contact = contactElement.textContent.trim();
+    
+    // Extract summary
+    const summarySection = resumeElement.querySelector('.section');
+    if (summarySection && summarySection.querySelector('.section-title')?.textContent.includes('Summary')) {
+        const summaryText = summarySection.querySelector('p');
+        if (summaryText) sections.summary = summaryText.textContent.trim();
+    }
+    
+    // Extract experience
+    const experienceItems = resumeElement.querySelectorAll('.experience-item');
+    experienceItems.forEach(item => {
+        const title = item.querySelector('.job-title')?.textContent.trim() || '';
+        const company = item.querySelector('.company')?.textContent.trim() || '';
+        const date = item.querySelector('.date')?.textContent.trim() || '';
+        const description = item.querySelector('ul')?.textContent.trim() || '';
+        
+        sections.experience.push({ title, company, date, description });
+    });
+    
+    // Extract skills
+    const skillItems = resumeElement.querySelectorAll('.skill-item');
+    skillItems.forEach(item => {
+        sections.skills.push(item.textContent.trim());
+    });
+    
+    return sections;
+}
+
+function generateEnhancedDocxContent(sections) {
+    return `
+RESUME - ${sections.name.toUpperCase()}
+
+Contact Information:
+${sections.contact}
+
+Professional Summary:
+${sections.summary}
+
+Professional Experience:
+${sections.experience.map(exp => `
+${exp.title} | ${exp.company} | ${exp.date}
+${exp.description}
+`).join('\n')}
+
+Core Skills:
+${sections.skills.join(' • ')}
+
+Education:
+${sections.education}
+
+---
+Generated by AI Resume Customizer Pro
+    `.trim();
+}
+
+// COMBO EXPORT FUNCTION - Add this new function
+async function exportComboPackage() {
+    if (!document.getElementById('resumeContent')?.innerHTML.trim()) {
+        showError('Please generate a resume preview first!');
+        return;
+    }
+    
+    showLoading('Creating complete application package...');
+    
+    try {
+        // Export resume
+        await exportToPDF();
+        
+        // Wait a moment then export cover letter if available
+        if (generatedCoverLetter) {
+            setTimeout(() => {
+                exportCoverLetter();
+                showSuccess('Complete application package downloaded! (Resume + Cover Letter)');
+            }, 2000);
+        } else {
+            showSuccess('Resume exported! Generate a cover letter to download the complete package.');
         }
         
-        function exportToDocx() {
-            const resumeContent = document.getElementById('resumeContent');
-            
-            if (!resumeContent || !resumeContent.innerHTML.trim()) {
-                showError('Please generate a resume preview first!');
-                return;
-            }
-            
-            // Simple text export for DOCX (placeholder - would need proper library for full DOCX)
-            const textContent = resumeContent.innerText;
-            const blob = new Blob([textContent], { 
-                type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'AI-Customized-Resume.docx';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showSuccess('DOCX file downloaded! Note: For advanced formatting, copy content to Microsoft Word.');
-        }
-        
-        function exportCoverLetter() {
-            if (!generatedCoverLetter) {
-                showError('Please generate a cover letter first!');
-                return;
-            }
-            
-            try {
-                let coverLetterText = '';
-                
-                try {
-                    const content = JSON.parse(generatedCoverLetter.cover_letter_content);
-                    coverLetterText = `
-Subject: ${content.suggested_subject_line || 'Application for ' + document.getElementById('positionTitle').value}
+    } catch (error) {
+        console.error('Combo export error:', error);
+        hideLoading();
+        showError('Package export failed. Try exporting files individually.');
+    }
+}
 
-Dear Hiring Manager,
+// EXPORT STATS FUNCTIONS - Add these new functions
+let exportCounts = {
+    pdf: 0,
+    docx: 0,
+    total: 0
+};
 
-${content.opening_paragraph || 'Opening paragraph'}
+function updateExportStats(type) {
+    exportCounts[type]++;
+    exportCounts.total++;
+    
+    // Update display if elements exist
+    const pdfCount = document.getElementById('pdfExportCount');
+    const docxCount = document.getElementById('docxExportCount');
+    const totalCount = document.getElementById('totalExportCount');
+    
+    if (pdfCount) pdfCount.textContent = exportCounts.pdf;
+    if (docxCount) docxCount.textContent = exportCounts.docx;
+    if (totalCount) totalCount.textContent = exportCounts.total;
+    
+    // Save to localStorage
+    localStorage.setItem('exportCounts', JSON.stringify(exportCounts));
+}
 
-${Array.isArray(content.body_paragraphs) ? content.body_paragraphs.join('\n\n') : 'Body content'}
-
-${content.closing_paragraph || 'Closing paragraph'}
-
-Sincerely,
-John Doe
-                    `.trim();
-                } catch (e) {
-                    coverLetterText = generatedCoverLetter.cover_letter_content;
-                }
-                
-                const blob = new Blob([coverLetterText], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'AI-Generated-Cover-Letter.txt';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showSuccess('Cover letter downloaded successfully!');
-                
-            } catch (error) {
-                console.error('Cover letter export error:', error);
-                showError('Failed to export cover letter.');
-            }
-        }
-        
+function loadExportStats() {
+    const saved = localStorage.getItem('exportCounts');
+    if (saved) {
+        exportCounts = JSON.parse(saved);
+    }
+}
         // Event Listeners for Form Updates - Remove duplicate listeners
         // (These are now handled in DOMContentLoaded above)
         
@@ -2476,15 +2730,33 @@ John Doe
         // Add some visual enhancements
         document.addEventListener('DOMContentLoaded', function() {
             // Add hover effects to cards
-            const cards = document.querySelectorAll('.template-card, .metric-card, .customization-option');
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-5px)';
-                });
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects to export buttons
+    const exportButtons = document.querySelectorAll('.export-btn');
+    exportButtons.forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+        });
+    });
+
+    // Add hover effects to cards
+    const cards = document.querySelectorAll('.template-card, .metric-card, .customization-option');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+
             
             // Add typing effect to header
             const headerText = document.querySelector('.header h1');
