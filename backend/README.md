@@ -33,7 +33,7 @@ app.add_middleware(
 # Initialize OpenAI client
 # For now, we'll set the API key directly in code (you'll move this to environment variable later)
 openai_client = OpenAI(
-    api_key="API KEY HERE"  # Replace with your real key  # Secure way  # Replace with your actual API key
+    api_key="NEW API KEY HERE"  # Replace with your real key  # Secure way  # Replace with your actual API key
 )
 # Load spaCy model
 try:
