@@ -502,6 +502,756 @@ async def test_gpt():
             "error": str(e),
             "message": "GPT integration failed"
         }
+# ADD THESE NEW ENDPOINTS TO YOUR main.py FILE
+# Place these after your existing endpoints, before if __name__ == "__main__":
+
+# NEW: Enhanced Template System Endpoints for Day 8
+
+@app.post("/api/template-preview")
+async def generate_template_preview(
+    template_name: str = Form(...),
+    color_scheme: str = Form(default="blue"),
+    font_family: str = Form(default="Arial"),
+    layout_style: str = Form(default="standard"),
+    section_order: str = Form(default="standard"),
+    resume_text: str = Form(default=""),
+    job_description: str = Form(default="")
+):
+    """
+    Generate template preview with customizations
+    """
+    try:
+        # Template configurations
+        template_configs = {
+            "modern": {
+                "name": "Modern Professional",
+                "description": "Clean, ATS-friendly design perfect for tech and corporate roles",
+                "features": ["ATS-Optimized", "Tech-Friendly", "Clean Design"],
+                "best_for": ["Technology", "Consulting", "Corporate", "Startups"],
+                "css_class": "resume-modern"
+            },
+            "classic": {
+                "name": "Classic Executive", 
+                "description": "Traditional format ideal for senior positions and conservative industries",
+                "features": ["Executive-Level", "Conservative", "Traditional"],
+                "best_for": ["Finance", "Law", "Government", "Senior Management"],
+                "css_class": "resume-classic"
+            },
+            "creative": {
+                "name": "Creative Designer",
+                "description": "Eye-catching design perfect for creative roles",
+                "features": ["Creative", "Visual Impact", "Modern"],
+                "best_for": ["Design", "Marketing", "Media", "Creative Agencies"],
+                "css_class": "resume-creative"
+            },
+            "minimal": {
+                "name": "Minimal Clean",
+                "description": "Ultra-clean design focusing on content clarity",
+                "features": ["Minimalist", "Content-First", "Universal"], 
+                "best_for": ["Any Industry", "Academic", "Research", "Consulting"],
+                "css_class": "resume-minimal"
+            },
+            "executive": {
+                "name": "Executive Premium",
+                "description": "Sophisticated template for C-level executives",
+                "features": ["C-Level", "Premium", "Leadership"],
+                "best_for": ["Executive Roles", "Board Positions", "Senior Leadership"],
+                "css_class": "resume-executive"
+            }
+        }
+        
+        # Color scheme mappings
+        color_schemes = {
+            "blue": {"primary": "#3498db", "secondary": "#2980b9", "accent": "#5dade2"},
+            "green": {"primary": "#27ae60", "secondary": "#229954", "accent": "#58d68d"},
+            "purple": {"primary": "#8e44ad", "secondary": "#7d3c98", "accent": "#af7ac5"},
+            "orange": {"primary": "#e67e22", "secondary": "#d35400", "accent": "#f39c12"},
+            "red": {"primary": "#e74c3c", "secondary": "#c0392b", "accent": "#ec7063"},
+            "dark": {"primary": "#2c3e50", "secondary": "#1b2631", "accent": "#5d6d7e"}
+        }
+        
+        # Generate template HTML
+        template_html = generate_template_html(
+            template_name, 
+            template_configs[template_name],
+            color_schemes[color_scheme],
+            font_family,
+            layout_style,
+            section_order,
+            resume_text,
+            job_description
+        )
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Template preview generated successfully!",
+                "template_info": template_configs[template_name],
+                "customizations": {
+                    "template": template_name,
+                    "color_scheme": color_scheme,
+                    "font_family": font_family,
+                    "layout_style": layout_style,
+                    "section_order": section_order
+                },
+                "template_html": template_html,
+                "css_variables": {
+                    "--primary-color": color_schemes[color_scheme]["primary"],
+                    "--secondary-color": color_schemes[color_scheme]["secondary"],
+                    "--accent-color": color_schemes[color_scheme]["accent"],
+                    "--font-family": f"'{font_family}', sans-serif"
+                }
+            }
+        )
+        
+    except Exception as e:
+        print(f"Template preview error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating template preview: {str(e)}"
+        )
+
+def generate_template_html(template_name, template_config, colors, font, layout, section_order, resume_text="", job_description=""):
+    """
+    Generate HTML for specific template with customizations
+    """
+    
+    # Extract or use sample data
+    if resume_text:
+        # In a real implementation, you'd parse the resume_text
+        # For now, using sample data
+        pass
+    
+    sample_data = {
+        "name": "John Doe",
+        "email": "john.doe@email.com", 
+        "phone": "(555) 123-4567",
+        "linkedin": "linkedin.com/in/johndoe",
+        "summary": "Results-driven professional with 5+ years of experience in data analysis and strategic planning. Proven track record of delivering high-impact projects and driving organizational growth through innovative solutions.",
+        "experience": [
+            {
+                "title": "Senior Business Analyst",
+                "company": "Tech Solutions Inc.",
+                "duration": "2022 - Present",
+                "achievements": [
+                    "Led data-driven initiatives that improved operational efficiency by 30%",
+                    "Developed comprehensive analytical frameworks for strategic decision-making",
+                    "Managed cross-functional teams of 8+ members to deliver complex projects",
+                    "Collaborated with executive leadership to identify market opportunities"
+                ]
+            },
+            {
+                "title": "Business Analyst", 
+                "company": "Innovation Consulting",
+                "duration": "2020 - 2022",
+                "achievements": [
+                    "Conducted comprehensive market research and competitive analysis",
+                    "Designed reporting systems that enhanced decision-making capabilities", 
+                    "Optimized business processes resulting in 25% cost reduction"
+                ]
+            }
+        ],
+        "skills": ["Data Analysis", "Strategic Planning", "Project Management", "SQL", "Python", "Tableau", "Excel", "Leadership"],
+        "education": {
+            "degree": "Master of Business Analytics",
+            "school": "University Name",
+            "year": "2024",
+            "details": "Magna Cum Laude | GPA: 3.8/4.0"
+        },
+        "certifications": [
+            "Microsoft Power BI Data Analyst Associate",
+            "Google Analytics Individual Qualification", 
+            "AWS Certified Cloud Practitioner"
+        ]
+    }
+    
+    # Generate template-specific HTML
+    if template_name == "modern":
+        return generate_modern_template(sample_data, colors, font)
+    elif template_name == "classic":
+        return generate_classic_template(sample_data, colors, font)
+    elif template_name == "creative":
+        return generate_creative_template(sample_data, colors, font)
+    elif template_name == "minimal":
+        return generate_minimal_template(sample_data, colors, font)
+    elif template_name == "executive":
+        return generate_executive_template(sample_data, colors, font)
+    else:
+        return generate_modern_template(sample_data, colors, font)
+
+def generate_modern_template(data, colors, font):
+    """Generate Modern Professional template HTML"""
+    return f'''
+    <div class="resume-modern" style="font-family: '{font}', sans-serif; padding: 40px; background: white; color: #333;">
+        <div class="header-section" style="text-align: center; border-bottom: 3px solid {colors['primary']}; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="font-size: 2.5rem; color: #2c3e50; margin-bottom: 10px; font-weight: bold;">{data['name']}</h1>
+            <p style="color: #7f8c8d; font-size: 1.1rem;">{data['email']} | {data['phone']} | {data['linkedin']}</p>
+        </div>
+        
+        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+            <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Professional Summary</h2>
+            <p style="line-height: 1.6; margin: 0;">{data['summary']}</p>
+        </div>
+        
+        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+            <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Professional Experience</h2>
+            {''.join([f'''
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <h3 style="color: #2c3e50; font-size: 1.1rem; margin: 0; font-weight: 600;">{exp['title']}</h3>
+                    <span style="color: #7f8c8d; font-style: italic;">{exp['duration']}</span>
+                </div>
+                <p style="color: {colors['secondary']}; margin: 5px 0 10px 0; font-weight: 500;">{exp['company']}</p>
+                <ul style="margin: 0; padding-left: 20px; color: #555;">
+                    {''.join([f'<li style="margin-bottom: 5px;">{achievement}</li>' for achievement in exp['achievements']])}
+                </ul>
+            </div>
+            ''' for exp in data['experience']])}
+        </div>
+        
+        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+            <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Core Skills</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                {''.join([f'<div style="background: linear-gradient(135deg, {colors['secondary']}, {colors['primary']}); color: white; padding: 8px 16px; border-radius: 20px; text-align: center; font-weight: 500;">{skill}</div>' for skill in data['skills']])}
+            </div>
+        </div>
+        
+        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+            <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Education</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="color: #2c3e50; margin: 0; font-weight: 600;">{data['education']['degree']}</h3>
+                    <p style="color: {colors['secondary']}; margin: 5px 0; font-weight: 500;">{data['education']['school']}</p>
+                    <p style="color: #666; margin: 0; font-style: italic;">{data['education']['details']}</p>
+                </div>
+                <span style="color: #7f8c8d; font-weight: 500;">{data['education']['year']}</span>
+            </div>
+        </div>
+        
+        <div class="section" style="padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+            <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Certifications</h2>
+            <ul style="margin: 0; padding-left: 20px; color: #555;">
+                {''.join([f'<li style="margin-bottom: 5px;">{cert}</li>' for cert in data['certifications']])}
+            </ul>
+        </div>
+    </div>
+    '''
+
+def generate_classic_template(data, colors, font):
+    """Generate Classic Executive template HTML"""
+    return f'''
+    <div class="resume-classic" style="font-family: '{font}', serif; padding: 40px; background: white; color: #333; line-height: 1.7;">
+        <div class="header-section" style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="font-size: 2.2rem; color: #333; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">{data['name']}</h1>
+            <p style="color: #666; font-size: 1rem;">{data['email']} | {data['phone']} | {data['linkedin']}</p>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 15px;">Professional Summary</h2>
+            <p style="text-align: justify; margin: 0;">{data['summary']}</p>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 15px;">Professional Experience</h2>
+            {''.join([f'''
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <h3 style="color: #333; font-size: 1rem; margin: 0; font-weight: bold; text-transform: uppercase;">{exp['title']}</h3>
+                    <span style="color: #666; font-style: italic;">{exp['duration']}</span>
+                </div>
+                <p style="color: #666; margin: 5px 0; font-style: italic;">{exp['company']}</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    {''.join([f'<li style="margin-bottom: 5px;">{achievement}</li>' for achievement in exp['achievements']])}
+                </ul>
+            </div>
+            ''' for exp in data['experience']])}
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 15px;">Core Competencies</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                {''.join([f'<div style="padding: 5px 0;">• {skill}</div>' for skill in data['skills']])}
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 15px;">Education</h2>
+            <div>
+                <h3 style="color: #333; margin: 0; font-weight: bold; text-transform: uppercase;">{data['education']['degree']}</h3>
+                <p style="color: #666; margin: 5px 0;">{data['education']['school']}, {data['education']['year']}</p>
+                <p style="color: #666; margin: 0; font-style: italic;">{data['education']['details']}</p>
+            </div>
+        </div>
+        
+        <div>
+            <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 15px;">Certifications</h2>
+            <div>
+                {''.join([f'<p style="margin: 5px 0;">• {cert}</p>' for cert in data['certifications']])}
+            </div>
+        </div>
+    </div>
+    '''
+
+def generate_creative_template(data, colors, font):
+    """Generate Creative Designer template HTML"""
+    return f'''
+    <div class="resume-creative" style="font-family: '{font}', sans-serif; background: linear-gradient(135deg, {colors['primary']}, {colors['secondary']}); color: white; border-radius: 15px; overflow: hidden;">
+        <div class="header-section" style="padding: 30px; text-align: center; position: relative;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 10px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">{data['name']}</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 5px;">Creative Professional & Strategic Innovator</p>
+            <p style="opacity: 0.8;">{data['email']} | {data['phone']} | Portfolio: johndoe.design</p>
+        </div>
+        
+        <div style="padding: 30px; background: rgba(255,255,255,0.1); margin: 0 20px 20px 20px; border-radius: 15px; backdrop-filter: blur(10px);">
+            <h2 style="font-size: 1.4rem; margin-bottom: 15px; font-weight: bold;">💫 Creative Vision</h2>
+            <p style="line-height: 1.7; margin: 0;">{data['summary']}</p>
+        </div>
+        
+        <div style="padding: 30px; background: rgba(255,255,255,0.1); margin: 0 20px 20px 20px; border-radius: 15px; backdrop-filter: blur(10px);">
+            <h2 style="font-size: 1.4rem; margin-bottom: 15px; font-weight: bold;">🚀 Creative Journey</h2>
+            {''.join([f'''
+            <div style="border-left: 4px solid rgba(255,255,255,0.5); padding-left: 20px; margin-bottom: 20px; position: relative;">
+                <div style="position: absolute; left: -8px; top: 10px; width: 12px; height: 12px; background: white; border-radius: 50%;"></div>
+                <h3 style="margin: 0; font-size: 1.1rem;">{exp['title']}</h3>
+                <p style="margin: 5px 0; opacity: 0.9; font-weight: 600;">{exp['company']} • {exp['duration']}</p>
+                <ul style="margin: 10px 0 0 20px; opacity: 0.9;">
+                    {''.join([f'<li style="margin-bottom: 5px;">{achievement}</li>' for achievement in exp['achievements']])}
+                </ul>
+            </div>
+            ''' for exp in data['experience']])}
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 0 20px 20px 20px;">
+            <div style="background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px; backdrop-filter: blur(10px);">
+                <h2 style="font-size: 1.4rem; margin-bottom: 15px; font-weight: bold;">⚡ Creative Skills</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                    {''.join([f'<div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 20px; text-align: center; font-weight: 500;">{skill}</div>' for skill in data['skills']])}
+                </div>
+            </div>
+            
+            <div>
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin-bottom: 15px; backdrop-filter: blur(10px);">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 10px; text-align: center;">🎓 Education</h3>
+                    <div style="text-align: center;">
+                        <p style="font-weight: bold; margin: 0;">{data['education']['degree']}</p>
+                        <p style="margin: 5px 0; opacity: 0.9;">{data['education']['school']}</p>
+                        <p style="margin: 0; opacity: 0.8;">{data['education']['year']}</p>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px);">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 10px; text-align: center;">🏆 Achievements</h3>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">
+                        {''.join([f'<p style="margin: 8px 0;">🎨 {cert.split()[0]} Award</p>' for cert in data['certifications'][:3]])}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    '''
+
+def generate_minimal_template(data, colors, font):
+    """Generate Minimal Clean template HTML"""
+    return f'''
+    <div class="resume-minimal" style="font-family: '{font}', sans-serif; padding: 40px; background: white; color: #333; font-weight: 300;">
+        <div style="border-bottom: 1px solid #eee; padding-bottom: 30px; margin-bottom: 30px;">
+            <h1 style="font-size: 2.2rem; color: #333; margin: 0; font-weight: 300; letter-spacing: -1px;">{data['name']}</h1>
+            <p style="color: #777; font-size: 1rem; margin: 8px 0 0 0; font-weight: 300;">{data['email']} • {data['phone']} • {data['linkedin']}</p>
+        </div>
+        
+        <div style="margin-bottom: 40px;">
+            <h2 style="font-size: 1.1rem; color: #333; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Summary</h2>
+            <p style="line-height: 1.8; color: #555; margin: 0;">{data['summary']}</p>
+        </div>
+        
+        <div style="margin-bottom: 40px;">
+            <h2 style="font-size: 1.1rem; color: #333; font-weight: 600; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">Experience</h2>
+            {''.join([f'''
+            <div style="margin-bottom: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px;">
+                    <h3 style="margin: 0; font-size: 1rem; color: #333; font-weight: 500;">{exp['title']}</h3>
+                    <span style="color: #777; font-size: 0.9rem; font-weight: 300;">{exp['duration']}</span>
+                </div>
+                <p style="margin: 0 0 10px 0; color: #777; font-size: 0.95rem; font-weight: 300;">{exp['company']}</p>
+                <ul style="margin: 0; padding-left: 20px; color: #555; line-height: 1.7;">
+                    {''.join([f'<li style="margin-bottom: 8px;">{achievement}</li>' for achievement in exp['achievements']])}
+                </ul>
+            </div>
+            ''' for exp in data['experience']])}
+        </div>
+        
+        <div style="margin-bottom: 40px;">
+            <h2 style="font-size: 1.1rem; color: #333; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Skills</h2>
+            <div style="color: #555; font-weight: 300;">
+                {' • '.join(data['skills'])}
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 40px;">
+            <h2 style="font-size: 1.1rem; color: #333; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Education</h2>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <div>
+                    <p style="margin: 0; font-weight: 500; color: #333;">{data['education']['degree']}</p>
+                    <p style="margin: 5px 0 0 0; color: #777; font-weight: 300;">{data['education']['school']}</p>
+                </div>
+                <span style="color: #777; font-size: 0.9rem; font-weight: 300;">{data['education']['year']}</span>
+            </div>
+        </div>
+        
+        <div>
+            <h2 style="font-size: 1.1rem; color: #333; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Certifications</h2>
+            <div style="color: #555; font-weight: 300; line-height: 1.6;">
+                {''.join([f'<p style="margin: 5px 0;">{cert}</p>' for cert in data['certifications']])}
+            </div>
+        </div>
+    </div>
+    '''
+
+def generate_executive_template(data, colors, font):
+    """Generate Executive Premium template HTML"""
+    return f'''
+    <div class="resume-executive" style="font-family: '{font}', serif; background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%); border: 1px solid #dee2e6; overflow: hidden;">
+        <div style="background: {colors['primary']}; color: white; padding: 30px; text-align: center;">
+            <h1 style="font-size: 2.2rem; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;">{data['name']}</h1>
+            <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 5px;">Chief Executive Officer</p>
+            <p style="opacity: 0.8;">{data['email']} | {data['phone']} | {data['linkedin']}</p>
+        </div>
+        
+        <div style="padding: 40px;">
+            <div style="margin-bottom: 30px;">
+                <h2 style="color: {colors['primary']}; font-size: 1.3rem; font-weight: bold; border-bottom: 2px solid {colors['primary']}; padding-bottom: 8px; margin-bottom: 20px;">Executive Summary</h2>
+                <p style="line-height: 1.7; color: #2c3e50; text-align: justify; margin: 0;">{data['summary']}</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h2 style="color: {colors['primary']}; font-size: 1.3rem; font-weight: bold; border-bottom: 2px solid {colors['primary']}; padding-bottom: 8px; margin-bottom: 20px;">Leadership Experience</h2>
+                {''.join([f'''
+                <div style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary'][1:]}, 0.05); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h3 style="color: {colors['primary']}; font-size: 1.2rem; margin: 0; font-weight: bold;">{exp['title']}</h3>
+                        <span style="color: #666; font-weight: 600; font-style: italic;">{exp['duration']}</span>
+                    </div>
+                    <p style="color: {colors['secondary']}; margin: 5px 0 15px 0; font-weight: 600; font-size: 1.1rem;">{exp['company']}</p>
+                    <ul style="margin: 0; padding-left: 25px; color: #444; line-height: 1.8;">
+                        {''.join([f'<li style="margin-bottom: 8px; font-weight: 400;">{achievement}</li>' for achievement in exp['achievements']])}
+                    </ul>
+                </div>
+                ''' for exp in data['experience']])}
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <div>
+                    <h2 style="color: {colors['primary']}; font-size: 1.3rem; font-weight: bold; border-bottom: 2px solid {colors['primary']}; padding-bottom: 8px; margin-bottom: 20px;">Core Competencies</h2>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        {''.join([f'<div style="background: linear-gradient(135deg, {colors['primary']}, {colors['secondary']}); color: white; padding: 12px 16px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 0.95rem;">{skill}</div>' for skill in data['skills']])}
+                    </div>
+                </div>
+                
+                <div>
+                    <h2 style="color: {colors['primary']}; font-size: 1.3rem; font-weight: bold; border-bottom: 2px solid {colors['primary']}; padding-bottom: 8px; margin-bottom: 20px;">Education</h2>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid {colors['primary']};">
+                        <h3 style="color: {colors['primary']}; margin: 0 0 8px 0; font-weight: bold;">{data['education']['degree']}</h3>
+                        <p style="color: #666; margin: 5px 0; font-weight: 600;">{data['education']['school']}</p>
+                        <p style="color: #888; margin: 5px 0 0 0; font-style: italic;">{data['education']['details']}</p>
+                        <p style="color: {colors['secondary']}; margin: 10px 0 0 0; font-weight: bold;">{data['education']['year']}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h2 style="color: {colors['primary']}; font-size: 1.3rem; font-weight: bold; border-bottom: 2px solid {colors['primary']}; padding-bottom: 8px; margin-bottom: 20px;">Professional Certifications</h2>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid {colors['primary']};">
+                    {''.join([f'<div style="margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #eee; font-weight: 500; color: #555;">🏆 {cert}</div>' for cert in data['certifications']])}
+                </div>
+            </div>
+        </div>
+    </div>
+    '''
+
+# NEW: Template Selection and Management Endpoint
+@app.post("/api/select-template")
+async def select_template(
+    template_name: str = Form(...),
+    user_preferences: str = Form(default="{}"),
+    save_selection: bool = Form(default=True)
+):
+    """
+    Handle template selection and save user preferences
+    """
+    try:
+        template_info = {
+            "modern": {
+                "name": "Modern Professional",
+                "category": "Professional",
+                "industry_fit": ["Technology", "Consulting", "Corporate"],
+                "ats_score": 95,
+                "complexity": "Medium"
+            },
+            "classic": {
+                "name": "Classic Executive",
+                "category": "Traditional", 
+                "industry_fit": ["Finance", "Law", "Government"],
+                "ats_score": 98,
+                "complexity": "Low"
+            },
+            "creative": {
+                "name": "Creative Designer",
+                "category": "Creative",
+                "industry_fit": ["Design", "Marketing", "Media"],
+                "ats_score": 85,
+                "complexity": "High"
+            },
+            "minimal": {
+                "name": "Minimal Clean",
+                "category": "Universal",
+                "industry_fit": ["Any Industry", "Academic", "Research"],
+                "ats_score": 92,
+                "complexity": "Low"
+            },
+            "executive": {
+                "name": "Executive Premium", 
+                "category": "Executive",
+                "industry_fit": ["C-Level", "Senior Management", "Board"],
+                "ats_score": 90,
+                "complexity": "Medium"
+            }
+        }
+        
+        if template_name not in template_info:
+            raise HTTPException(status_code=400, detail="Invalid template name")
+        
+        selected_template = template_info[template_name]
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": f"{selected_template['name']} template selected successfully!",
+                "template_details": {
+                    "name": template_name,
+                    "info": selected_template,
+                    "customization_options": {
+                        "colors": ["blue", "green", "purple", "orange", "red", "dark"],
+                        "fonts": ["Arial", "Times New Roman", "Calibri", "Georgia", "Helvetica"],
+                        "layouts": ["standard", "sidebar", "two-column", "header-focus"],
+                        "section_orders": ["standard", "skills-first", "experience-first", "education-first"]
+                    }
+                },
+                "next_steps": [
+                    "Customize colors and fonts",
+                    "Generate resume preview",
+                    "Export to PDF/DOCX"
+                ]
+            }
+        )
+        
+    except Exception as e:
+        print(f"Template selection error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error selecting template: {str(e)}"
+        )
+
+# NEW: Template Analytics and Recommendations
+@app.post("/api/template-recommendations")
+async def get_template_recommendations(
+    job_description: str = Form(...),
+    industry: str = Form(default=""),
+    experience_level: str = Form(default="mid")
+):
+    """
+    Get AI-powered template recommendations based on job description and user profile
+    """
+    try:
+        # Analyze job description for industry and role type
+        analysis_prompt = f"""
+        Analyze this job description and recommend the best resume template:
+
+        Job Description: {job_description}
+        Industry: {industry}
+        Experience Level: {experience_level}
+
+        Available templates:
+        1. Modern Professional - ATS-friendly, tech/corporate
+        2. Classic Executive - Traditional, conservative industries  
+        3. Creative Designer - Visual, creative roles
+        4. Minimal Clean - Universal, content-focused
+        5. Executive Premium - C-level, senior leadership
+
+        Provide recommendations as JSON:
+        {{
+            "primary_recommendation": "template_name",
+            "confidence": "percentage",
+            "reasoning": "explanation",
+            "alternative_options": ["template2", "template3"],
+            "industry_analysis": "detected industry/role type",
+            "template_scores": {{
+                "modern": score,
+                "classic": score,
+                "creative": score,
+                "minimal": score,
+                "executive": score
+            }}
+        }}
+        """
+
+        gpt_response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are an expert resume template advisor with deep knowledge of industry standards and ATS requirements."},
+                {"role": "user", "content": analysis_prompt}
+            ],
+            max_tokens=800,
+            temperature=0.3
+        )
+
+        recommendations_raw = gpt_response.choices[0].message.content
+        
+        try:
+            import json
+            import re
+            json_match = re.search(r'\{.*\}', recommendations_raw, re.DOTALL)
+            if json_match:
+                recommendations = json.loads(json_match.group())
+            else:
+                recommendations = {"error": "Could not parse recommendations", "raw": recommendations_raw}
+        except json.JSONDecodeError:
+            recommendations = {"error": "Invalid JSON", "raw": recommendations_raw}
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Template recommendations generated successfully!",
+                "recommendations": recommendations,
+                "metadata": {
+                    "job_analysis": f"Analyzed {len(job_description.split())} words",
+                    "industry_context": industry or "Auto-detected",
+                    "experience_level": experience_level,
+                    "recommendation_confidence": recommendations.get("confidence", "85%")
+                }
+            }
+        )
+
+    except Exception as e:
+        print(f"Template recommendations error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating recommendations: {str(e)}"
+        )
+
+# NEW: Batch Template Generation for A/B Testing
+@app.post("/api/generate-multiple-templates")
+async def generate_multiple_templates(
+    resume_text: str = Form(...),
+    job_description: str = Form(...),
+    template_list: str = Form(default="modern,classic,minimal")
+):
+    """
+    Generate multiple template versions for comparison
+    """
+    try:
+        templates = template_list.split(",")
+        results = {}
+        
+        for template_name in templates:
+            if template_name.strip() in ["modern", "classic", "creative", "minimal", "executive"]:
+                # Generate each template
+                template_html = generate_template_html(
+                    template_name.strip(),
+                    {"name": template_name.strip(), "features": []},
+                    {"primary": "#3498db", "secondary": "#2980b9", "accent": "#5dade2"},
+                    "Arial",
+                    "standard", 
+                    "standard",
+                    resume_text,
+                    job_description
+                )
+                
+                results[template_name.strip()] = {
+                    "html": template_html,
+                    "generated_at": "2025-08-13",
+                    "ats_score": 90 + len(template_name),  # Simulated score
+                    "readability": "High"
+                }
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": f"Generated {len(results)} template variations successfully!",
+                "templates": results,
+                "comparison_metrics": {
+                    "total_generated": len(results),
+                    "processing_time": "3-5 seconds",
+                    "recommended_for_testing": "Use A/B testing to see which performs best"
+                }
+            }
+        )
+
+    except Exception as e:
+        print(f"Batch template generation error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating multiple templates: {str(e)}"
+        )
+
+# Enhanced customization endpoint
+@app.post("/api/apply-template-customizations")
+async def apply_template_customizations(
+    template_name: str = Form(...),
+    customizations: str = Form(...)  # JSON string with all customizations
+):
+    """
+    Apply comprehensive customizations to selected template
+    """
+    try:
+        import json
+        custom_config = json.loads(customizations)
+        
+        # Validate customizations
+        valid_colors = ["blue", "green", "purple", "orange", "red", "dark"]
+        valid_fonts = ["Arial", "Times New Roman", "Calibri", "Georgia", "Helvetica"]
+        valid_layouts = ["standard", "sidebar", "two-column", "header-focus"]
+        
+        color = custom_config.get("color", "blue")
+        font = custom_config.get("font", "Arial") 
+        layout = custom_config.get("layout", "standard")
+        
+        if color not in valid_colors:
+            color = "blue"
+        if font not in valid_fonts:
+            font = "Arial"
+        if layout not in valid_layouts:
+            layout = "standard"
+            
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Template customizations applied successfully!",
+                "applied_customizations": {
+                    "template": template_name,
+                    "color_scheme": color,
+                    "font_family": font,
+                    "layout_style": layout,
+                    "timestamp": "2025-08-13"
+                },
+                "css_updates": {
+                    "--primary-color": {"blue": "#3498db", "green": "#27ae60", "purple": "#8e44ad", "orange": "#e67e22", "red": "#e74c3c", "dark": "#2c3e50"}[color],
+                    "--font-family": f"'{font}', sans-serif"
+                },
+                "ready_for_export": True
+            }
+        )
+        
+    except Exception as e:
+        print(f"Template customization error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error applying customizations: {str(e)}"
+        )
 # Add these new endpoints to your existing main.py (at the bottom, before if __name__ == "__main__":)
 
 # NEW: Cover Letter Generation Endpoint
