@@ -1,10 +1,9 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import pymupdf as PyMuPDF  # for PDF processing
+import fitz as PyMuPDF  # for PDF processing
 import docx    # for Word document processing
 import io
-import os
 import os
 import spacy
 import re
@@ -33,8 +32,9 @@ app.add_middleware(
 # Initialize OpenAI client
 # For now, we'll set the API key directly in code (you'll move this to environment variable later)
 openai_client = OpenAI(
-    api_key="NEW API KEY HERE"  # Replace with your real key  # Secure way  # Replace with your actual API key
+    api_key="NEW API KEY HERE"  # Replace with your real key
 )
+
 # Load spaCy model
 try:
     nlp = spacy.load("en_core_web_sm")
@@ -52,44 +52,140 @@ async def root():
 async def health_check():
     return {"status": "healthy", "message": "API with GPT integration is working perfectly!"}
 
+async def safe_openai_call(prompt, max_tokens=1000, temperature=0.3):
+    """Wrapper for OpenAI calls with error handling"""
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are an expert resume advisor."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=max_tokens,
+            temperature=temperature,
+            timeout=30
+        )
+        return {"success": True, "content": response.choices[0].message.content}
+        
+    except Exception as e:
+        error_type = type(e).__name__
+        if "authentication" in str(e).lower():
+            return {
+                "success": False,
+                "error": "authentication_error",
+                "user_message": "AI features temporarily unavailable. Using standard optimization.",
+                "fallback_available": True
+            }
+        elif "rate_limit" in str(e).lower():
+            return {
+                "success": False,
+                "error": "rate_limit_error",
+                "user_message": "AI service is busy. Please wait and try again.",
+                "retry_after": 60
+            }
+        elif "timeout" in str(e).lower():
+            return {
+                "success": False,
+                "error": "timeout_error", 
+                "user_message": "AI processing timed out. Using fallback optimization.",
+                "fallback_available": True
+            }
+        else:
+            return {
+                "success": False,
+                "error": "general_error",
+                "user_message": "AI processing unavailable. Using standard optimization.",
+                "fallback_available": True
+            }
+
 # Resume upload and parsing endpoint
 @app.post("/api/upload-resume")
 async def upload_resume(file: UploadFile = File(...)):
-    """
-    Upload and parse resume file (PDF, DOC, DOCX)
-    """
     try:
-        # Check file type
-        allowed_types = [
+        # File size validation
+        if file.size and file.size > 10 * 1024 * 1024:
+            raise HTTPException(
+                status_code=413,
+                detail={
+                    "error": "File too large",
+                    "message": f"File size {file.size / (1024*1024):.1f}MB exceeds 10MB limit",
+                    "suggestion": "Please compress your file or use a smaller version"
+                }
+            )
+        
+        # File type validation
+        valid_types = [
             "application/pdf",
             "application/msword", 
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         ]
         
-        if file.content_type not in allowed_types:
+        if file.content_type not in valid_types:
             raise HTTPException(
-                status_code=400, 
-                detail="Invalid file type. Please upload PDF, DOC, or DOCX files only."
+                status_code=400,
+                detail={
+                    "error": "Invalid file type",
+                    "received": file.content_type,
+                    "allowed": ["PDF", "DOC", "DOCX"],
+                    "suggestion": "Please convert your resume to PDF, DOC, or DOCX format"
+                }
             )
         
         # Read file content
         file_content = await file.read()
+        
+        if len(file_content) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Empty file",
+                    "message": "The uploaded file appears to be empty"
+                }
+            )
+            
         extracted_text = ""
         
-        # Process based on file type
         if file.content_type == "application/pdf":
-            # Process PDF
-            pdf_document = PyMuPDF.open(stream=file_content, filetype="pdf")
-            for page_num in range(pdf_document.page_count):
-                page = pdf_document[page_num]
-                extracted_text += page.get_text()
-            pdf_document.close()
-            
+            try:
+                pdf_document = PyMuPDF.open(stream=file_content, filetype="pdf")
+                for page_num in range(pdf_document.page_count):
+                    page = pdf_document[page_num]
+                    extracted_text += page.get_text()
+                pdf_document.close()
+            except Exception as pdf_error:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "PDF processing failed",
+                        "message": str(pdf_error),
+                        "suggestion": "Try saving your PDF in a different format"
+                    }
+                )
         elif file.content_type in ["application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]:
             # Process Word document
-            doc = docx.Document(io.BytesIO(file_content))
-            for paragraph in doc.paragraphs:
-                extracted_text += paragraph.text + "\n"
+            try:
+                doc = docx.Document(io.BytesIO(file_content))
+                for paragraph in doc.paragraphs:
+                    extracted_text += paragraph.text + "\n"
+            except Exception as docx_error:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "DOCX processing failed",
+                        "message": str(docx_error),
+                        "suggestion": "Try saving your document in a different format"
+                    }
+                )
+        
+        if len(extracted_text.strip()) < 50:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Insufficient content",
+                    "message": f"Only {len(extracted_text.strip())} characters extracted",
+                    "suggestion": "Your resume might be image-based. Try uploading a text-based version"
+                }
+            )
         
         # Return success response with extracted text
         return JSONResponse(
@@ -108,10 +204,16 @@ async def upload_resume(file: UploadFile = File(...)):
             }
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error processing file: {str(e)}"
+            detail={
+                "error": "Processing failed",
+                "message": "An unexpected error occurred",
+                "suggestion": "Please try again or contact support"
+            }
         )
 
 # Job description analysis endpoint (enhanced)
@@ -402,12 +504,13 @@ async def skills_gap_analysis(
                 "message": "Skills gap analysis failed"
             }
         )
+
 # NEW: AI Resume Customization Endpoint
 @app.post("/api/customize-resume")
 async def customize_resume(
     resume_text: str = Form(...),
     job_description: str = Form(...),
-    customization_level: str = Form(default="moderate")
+    customization_level: str = Form(default="medium")
 ):
     """
     Use GPT to customize resume based on job description
@@ -444,18 +547,20 @@ async def customize_resume(
         - customization_notes
         """
 
-        # Call GPT for customization
-        gpt_response = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are an expert resume writer with 10+ years of experience helping people land their dream jobs."},
-                {"role": "user", "content": customization_prompt}
-            ],
-            max_tokens=1500,
-            temperature=0.4
-        )
+        # Replace your existing OpenAI call with:
+        ai_result = await safe_openai_call(customization_prompt, 1500, 0.4)
 
-        customized_content = gpt_response.choices[0].message.content
+        if ai_result["success"]:
+            customized_content = ai_result["content"]
+        else:
+            # Fallback content generation
+            customized_content = json.dumps({
+                "customized_summary": "Professional with relevant experience for this role",
+                "optimized_experience": ["Experience tailored for the target position"],
+                "prioritized_skills": ["Key Skill 1", "Key Skill 2", "Key Skill 3"],
+                "fallback_used": True,
+                "fallback_reason": ai_result["user_message"]
+            })
 
         return JSONResponse(
             status_code=200,
@@ -502,6 +607,7 @@ async def test_gpt():
             "error": str(e),
             "message": "GPT integration failed"
         }
+
 # ADD THESE NEW ENDPOINTS TO YOUR main.py FILE
 # Place these after your existing endpoints, before if __name__ == "__main__":
 
@@ -669,10 +775,6 @@ def generate_template_html(template_name, template_config, colors, font, layout,
     # Generate template-specific HTML
     if template_name == "modern":
         return generate_modern_template(sample_data, colors, font)
-    elif template_name == "classic":
-        return generate_classic_template(sample_data, colors, font)
-    elif template_name == "creative":
-        return generate_creative_template(sample_data, colors, font)
     elif template_name == "minimal":
         return generate_minimal_template(sample_data, colors, font)
     elif template_name == "executive":
@@ -689,12 +791,12 @@ def generate_modern_template(data, colors, font):
             <p style="color: #7f8c8d; font-size: 1.1rem;">{data['email']} | {data['phone']} | {data['linkedin']}</p>
         </div>
         
-        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary'][1:]}, 0.1); border-radius: 10px; border-left: 4px solid {colors['primary']};">
             <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Professional Summary</h2>
             <p style="line-height: 1.6; margin: 0;">{data['summary']}</p>
         </div>
         
-        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary'][1:]}, 0.1); border-radius: 10px; border-left: 4px solid {colors['primary']};">
             <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Professional Experience</h2>
             {''.join([f'''
             <div style="margin-bottom: 20px;">
@@ -710,14 +812,14 @@ def generate_modern_template(data, colors, font):
             ''' for exp in data['experience']])}
         </div>
         
-        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary'][1:]}, 0.1); border-radius: 10px; border-left: 4px solid {colors['primary']};">
             <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Core Skills</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
                 {''.join([f'<div style="background: linear-gradient(135deg, {colors['secondary']}, {colors['primary']}); color: white; padding: 8px 16px; border-radius: 20px; text-align: center; font-weight: 500;">{skill}</div>' for skill in data['skills']])}
             </div>
         </div>
         
-        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+        <div class="section" style="margin-bottom: 25px; padding: 20px; background: rgba({colors['primary'][1:]}, 0.1); border-radius: 10px; border-left: 4px solid {colors['primary']};">
             <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Education</h2>
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
@@ -729,7 +831,7 @@ def generate_modern_template(data, colors, font):
             </div>
         </div>
         
-        <div class="section" style="padding: 20px; background: rgba({colors['primary']}0a); border-radius: 10px; border-left: 4px solid {colors['primary']};">
+        <div class="section" style="padding: 20px; background: rgba({colors['primary'][1:]}, 0.1); border-radius: 10px; border-left: 4px solid {colors['primary']};">
             <h2 style="color: {colors['primary']}; font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">Certifications</h2>
             <ul style="margin: 0; padding-left: 20px; color: #555;">
                 {''.join([f'<li style="margin-bottom: 5px;">{cert}</li>' for cert in data['certifications']])}
@@ -1109,8 +1211,6 @@ async def get_template_recommendations(
         recommendations_raw = gpt_response.choices[0].message.content
         
         try:
-            import json
-            import re
             json_match = re.search(r'\{.*\}', recommendations_raw, re.DOTALL)
             if json_match:
                 recommendations = json.loads(json_match.group())
@@ -1207,7 +1307,6 @@ async def apply_template_customizations(
     Apply comprehensive customizations to selected template
     """
     try:
-        import json
         custom_config = json.loads(customizations)
         
         # Validate customizations
@@ -1252,7 +1351,6 @@ async def apply_template_customizations(
             status_code=500,
             detail=f"Error applying customizations: {str(e)}"
         )
-# Add these new endpoints to your existing main.py (at the bottom, before if __name__ == "__main__":)
 
 # NEW: Cover Letter Generation Endpoint
 @app.post("/api/generate-cover-letter")
@@ -1603,6 +1701,7 @@ async def customize_template(
             status_code=500,
             detail=f"Error customizing template: {str(e)}"
         )
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
