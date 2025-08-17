@@ -5,10 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Resume Customizer Pro</title>
     <!-- Libraries for PDF generation and animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+async function exportCoverLetter() {
+    if (!window.generatedCoverLetter) {
+        showError('Please generate a cover letter first!');
+        return;
+    }
+    try {
+        const coverLetterText = typeof generatedCoverLetter.cover_letter_content === 'string' 
+            ? generatedCoverLetter.cover_letter_content 
+            : JSON.stringify(generatedCoverLetter.cover_letter_content, null, 2);
+        const blob = new Blob([coverLetterText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Cover-Letter-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showSuccess('Cover letter downloaded successfully!');
+        if (typeof updateExportStats === 'function') {
+            updateExportStats('cover');
+        }
+    } catch (error) {
+        console.error('Cover letter export error:', error);
+        showError('Failed to export cover letter. Please try again.');
+    }
+}
+
+</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <style>
+.template-features {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    justify-content: center;
+}
+
+.feature-tag {
+    background: linear-gradient(135deg, #e8f4fd, #d1ecf1);
+    color: #2c3e50;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid #bee5eb;
+}
+    /* Your existing CSS styles */
+    
+    /* Add this CSS animation here, NOT in JavaScript */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+    
+    /* Rest of your CSS */
         * {
             margin: 0;
             padding: 0;
@@ -43,6 +110,12 @@
                 transform: translateY(0);
             }
         }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
         
         .header {
             background: linear-gradient(45deg, #2c3e50, #3498db);
@@ -843,43 +916,112 @@
         }
         
         /* Responsive Design */
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 20px;
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .template-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .customization-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .analytics-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .feature-tabs {
-                flex-direction: column;
-                gap: 5px;
-            }
-            
-            .tab-btn {
-                min-width: auto;
-            }
-            
-            .tone-selector {
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
+        /* Day 9: Enhanced Mobile Responsiveness */
+@media (max-width: 768px) {
+    .container {
+        margin: 5px;
+        border-radius: 15px;
+    }
+    
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .template-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .customization-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-tabs {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .tab-btn {
+        min-width: auto;
+        text-align: center;
+    }
+    
+    .tone-selector {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-input,
+    .job-description-textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .process-btn,
+    .btn {
+        min-height: 44px;
+        width: 100%;
+        margin: 8px 0;
+        padding: 12px 20px;
+    }
+    
+    .export-btn {
+        width: 100%;
+        margin: 5px 0;
+    }
+    
+    .file-upload-area {
+        padding: 25px 15px;
+    }
+    
+    .upload-icon {
+        font-size: 2.5rem;
+    }
+    
+    #error-notification-container {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        top: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+    }
+    
+    .template-name {
+        font-size: 1rem;
+    }
+    
+    .template-features {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .feature-tag {
+        width: 100%;
+        text-align: center;
+    }
+}
         
         /* Success Messages */
         .success-message {
@@ -963,13 +1105,13 @@
                     placeholder="Paste the complete job description here...
 
 Include:
-• Job title and company name
-• Required skills and qualifications  
-• Job responsibilities and duties
-• Experience requirements
-• Preferred qualifications
-• Company culture information
-• Any specific keywords mentioned
+- Job title and company name        // ← Replace - with -
+- Required skills and qualifications  
+- Job responsibilities and duties
+- Experience requirements
+- Preferred qualifications
+- Company culture information
+- Any specific keywords mentioned
 
 The more detailed the job description, the better your AI-customized resume will be!"
                 ></textarea>
@@ -1469,6 +1611,24 @@ The more detailed the job description, the better your AI-customized resume will
                 </div>
 
                <!-- ENHANCED EXPORT CONTROLS - Day 7 Upgrade -->
+<!-- Add this inside your export controls section if missing: -->
+<div style="background: linear-gradient(135deg, #f1c40f, #f39c12); color: white; padding: 15px; border-radius: 10px; margin-top: 20px;">
+    <h4 style="margin-bottom: 10px; font-size: 1rem;">📊 Export Stats</h4>
+    <div style="display: flex; justify-content: space-around; text-align: center;">
+        <div>
+            <div style="font-size: 1.2rem; font-weight: bold;" id="pdfExportCount">0</div>
+            <div style="font-size: 0.8rem; opacity: 0.9;">PDFs Created</div>
+        </div>
+        <div>
+            <div style="font-size: 1.2rem; font-weight: bold;" id="docxExportCount">0</div>
+            <div style="font-size: 0.8rem; opacity: 0.9;">DOCX Files</div>
+        </div>
+        <div>
+            <div style="font-size: 1.2rem; font-weight: bold;" id="totalExportCount">0</div>
+            <div style="font-size: 0.8rem; opacity: 0.9;">Total Exports</div>
+        </div>
+    </div>
+</div>
 <div class="export-controls" style="text-align: center; margin-top: 30px; padding: 30px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 15px;">
     <h3 style="color: #2c3e50; margin-bottom: 20px; font-size: 1.3rem;">📤 Export Your Resume</h3>
     
@@ -1549,6 +1709,98 @@ The more detailed the job description, the better your AI-customized resume will
     </div>
 
     <script>
+// Day 9: Enhanced Error Handling System
+
+
+class ErrorHandler {
+    constructor() {
+        this.createErrorContainer();
+    }
+    
+    createErrorContainer() {
+        const container = document.createElement('div');
+        container.id = 'error-notification-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+        `;
+        document.body.appendChild(container);
+        this.container = container;
+    }
+    
+    showError(error, options = {}) {
+        const errorData = this.parseError(error);
+        const notification = this.createNotification(errorData);
+        this.container.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, options.timeout || 5000);
+    }
+    
+    parseError(error) {
+        if (typeof error === 'string') {
+            return { message: error, type: 'general' };
+        }
+        
+        if (error.response && error.response.data) {
+            return {
+                message: error.response.data.message || 'Server error occurred',
+                suggestion: error.response.data.suggestion,
+                type: 'server',
+                details: error.response.data
+            };
+        }
+        
+        return { message: error.message || 'An error occurred', type: 'client' };
+    }
+    
+    createNotification(errorData) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            background: white;
+            border-left: 4px solid #e74c3c;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 10px;
+            padding: 15px;
+            animation: slideInRight 0.3s ease;
+            max-width: 100%;
+        `;
+        
+        notification.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #e74c3c; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
+                        ⚠️ Error
+                    </div>
+                    <div style="color: #555; margin-bottom: 8px; line-height: 1.4;">
+                        ${errorData.message}
+                    </div>
+                    ${errorData.suggestion ? `
+                        <div style="color: #666; font-size: 0.9rem; font-style: italic; background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 8px;">
+                            💡 Suggestion: ${errorData.suggestion}
+                        </div>
+                    ` : ''}
+                </div>
+                <button onclick="this.parentNode.parentNode.remove()" 
+                        style="background: none; border: none; color: #999; cursor: pointer; font-size: 1.4rem; margin-left: 10px; line-height: 1;">
+                    ×
+                </button>
+            </div>
+        `;
+        
+        return notification;
+    }
+}
+
+// Initialize error handler
+const errorHandler = new ErrorHandler();
         // Global Variables
         let selectedFile = null;
         let resumeData = null;
@@ -1650,9 +1902,9 @@ The more detailed the job description, the better your AI-customized resume will
             
             // Check file size (10MB limit)
             if (file.size > 10 * 1024 * 1024) {
-                showError('File size too large. Please select a file under 10MB.');
-                return;
-            }
+    errorHandler.showError('File size too large. Please select a file under 10MB.');
+    return;
+}
             
             const validTypes = [
                 'application/pdf', 
@@ -1667,10 +1919,10 @@ The more detailed the job description, the better your AI-customized resume will
                                file.name.toLowerCase().endsWith('.doc') ||
                                file.name.toLowerCase().endsWith('.docx');
             
-            if (!isValidFile) {
-                showError('Please select a PDF, DOC, or DOCX file.');
-                return;
-            }
+           if (!isValidFile) {
+    errorHandler.showError('Please select a PDF, DOC, or DOCX file.');
+    return;
+}
             
             selectedFile = file;
             fileName.textContent = file.name;
@@ -1702,7 +1954,8 @@ The more detailed the job description, the better your AI-customized resume will
             document.querySelector(`[data-template="${templateName}"]`).classList.add('selected');
             selectedTemplate = templateName;
             
-            document.getElementById('previewBtn').disabled = false;
+            document.getElementById('enhancedPreviewBtn').disabled = false;
+document.getElementById('saveTemplateBtn').disabled = false;
             updateProgress(60);
         }
         
@@ -1766,7 +2019,109 @@ The more detailed the job description, the better your AI-customized resume will
                 processBtn.disabled = true;
             }
         }
+        // Day 9: Enhanced Input Validation
+function validateInputs() {
+    const errors = [];
+    
+    // File validation
+    if (!selectedFile) {
+        errors.push({
+            field: 'resume',
+            message: 'Please upload your resume file',
+            severity: 'error'
+        });
+    } else {
+        if (selectedFile.size > 10 * 1024 * 1024) {
+            errors.push({
+                field: 'resume',
+                message: `File size (${(selectedFile.size/(1024*1024)).toFixed(1)}MB) exceeds 10MB limit`,
+                severity: 'error'
+            });
+        }
+    }
+    
+    // Job description validation
+    const jobDescription = document.getElementById('jobDescription').value.trim();
+    if (!jobDescription) {
+        errors.push({
+            field: 'jobDescription',
+            message: 'Please enter the job description',
+            severity: 'error'
+        });
+    } else if (jobDescription.length < 100) {
+        errors.push({
+            field: 'jobDescription',
+            message: 'Job description seems too short. Please include more details for better results.',
+            severity: 'warning'
+        });
+    } else if (jobDescription.length > 10000) {
+        errors.push({
+            field: 'jobDescription',
+            message: 'Job description is very long. Consider focusing on key requirements.',
+            severity: 'warning'
+        });
+    }
+    
+    return errors;
+// Day 9: Add character counter and real-time validation
+function setupInputValidation() {
+    const jobDescriptionTextarea = document.getElementById('jobDescription');
+    
+    // Create character counter
+    const charCounter = document.createElement('div');
+    charCounter.style.cssText = 'text-align: right; font-size: 0.8rem; color: #666; margin-top: 5px;';
+    jobDescriptionTextarea.parentNode.appendChild(charCounter);
+    
+    jobDescriptionTextarea.addEventListener('input', function() {
+        const length = this.value.length;
+        charCounter.textContent = `${length} characters`;
         
+        if (length < 100) {
+            charCounter.style.color = '#e74c3c';
+            charCounter.textContent += ' (too short)';
+        } else if (length > 5000) {
+            charCounter.style.color = '#f39c12';
+            charCounter.textContent += ' (very long)';
+        } else {
+            charCounter.style.color = '#27ae60';
+        }
+        
+        updateProcessButton();
+    });
+}
+
+// Initialize input validation
+document.addEventListener('DOMContentLoaded', function() {
+    setupInputValidation();
+});
+}
+
+function validateFileUpload(file) {
+    const fileInfo = document.getElementById('fileInfo');
+    
+    if (file.size > 10 * 1024 * 1024) {
+        fileInfo.style.borderLeft = '4px solid #e74c3c';
+        fileInfo.innerHTML = `
+            <strong>⚠️ File Too Large:</strong> ${file.name}<br>
+            <span style="color: #e74c3c;">Size: ${(file.size / (1024*1024)).toFixed(1)} MB (exceeds 10MB limit)</span>
+        `;
+        return false;
+    }
+    
+    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx)$/i)) {
+        fileInfo.style.borderLeft = '4px solid #f39c12';
+        fileInfo.innerHTML = `
+            <strong>⚠️ Unsupported Format:</strong> ${file.name}<br>
+            <span style="color: #f39c12;">Please upload PDF, DOC, or DOCX files only</span>
+        `;
+        return false;
+    }
+    
+    // Success state
+    fileInfo.style.borderLeft = '4px solid #27ae60';
+    return true;
+}
         function updateCoverLetterButton() {
             const companyName = document.getElementById('companyName').value.trim();
             const positionTitle = document.getElementById('positionTitle').value.trim();
@@ -1826,25 +2181,38 @@ The more detailed the job description, the better your AI-customized resume will
         }
         
         function showError(message) {
-            document.getElementById('errorText').textContent = message;
-            document.getElementById('errorMessage').style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('errorMessage').style.display = 'none';
-            }, 5000);
-        }
+    // Day 9: Use enhanced error handler
+    errorHandler.showError(message);
+    
+    // Keep backward compatibility
+    document.getElementById('errorText').textContent = message;
+    document.getElementById('errorMessage').style.display = 'block';
+    setTimeout(() => {
+        document.getElementById('errorMessage').style.display = 'none';
+    }, 5000);
+}
         
         // Main Resume Processing
-        async function processResume() {
-            if (!selectedFile) {
-                showError('Please upload a resume first.');
-                return;
+       async function processResume() {
+    // Day 9: Enhanced input validation
+    const validationErrors = validateInputs();
+    if (validationErrors.length > 0) {
+        validationErrors.forEach(error => {
+            if (error.severity === 'error') {
+                errorHandler.showError(error.message);
+            } else {
+                showSuccess(error.message); // Show warnings as info
             }
-            
-            const jobDescription = document.getElementById('jobDescription').value.trim();
-            if (jobDescription.length < 50) {
-                showError('Please enter a more detailed job description.');
-                return;
-            }
+        });
+        
+        // Only stop if there are actual errors, not warnings
+        const hasErrors = validationErrors.some(error => error.severity === 'error');
+        if (hasErrors) {
+            return;
+        }
+    }
+    
+    const jobDescription = document.getElementById('jobDescription').value.trim();
             
             showLoading('Analyzing your resume and job description...');
             updateProgress(30);
