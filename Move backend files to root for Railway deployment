@@ -1,0 +1,5 @@
+cd D:\ai-resume-tool\Git\bin\ai-resume-tool
+copy backend\main.py .
+copy backend\requirements.txt .
+copy backend\Procfile .
+copy backend\.env .
