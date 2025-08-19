@@ -1167,6 +1167,7 @@ The more detailed the job description, the better your AI-customized resume will
                         <div style="text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 15px;">
                             <div style="font-size: 1.2rem; font-weight: bold; color: #2c3e50;">John Doe</div>
                             <div style="color: #7f8c8d; font-size: 0.7rem;">john.doe@email.com | (555) 123-4567</div>
+
                         </div>
                         <div style="background: rgba(52, 152, 219, 0.1); padding: 10px; border-radius: 5px; border-left: 3px solid #3498db; margin-bottom: 10px;">
                             <div style="color: #3498db; font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;">Professional Summary</div>
@@ -1201,8 +1202,8 @@ The more detailed the job description, the better your AI-customized resume will
                 <div id="classic-preview" class="live-template-preview">
                     <div style="padding: 15px; font-family: 'Times New Roman', serif; background: white; border-radius: 8px; font-size: 0.75rem; line-height: 1.4;">
                         <div style="text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
-                            <div style="font-size: 1.1rem; font-weight: bold; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">JOHN DOE</div>
-                            <div style="color: #666; font-size: 0.7rem;">john.doe@email.com | (555) 123-4567</div>
+                            <div style="font-size: 1.1rem; font-weight: bold; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">${data.name}</div>
+                            <div style="color: #666; font-size: 0.7rem;">${data.email} | ${data.phone}</div>
                         </div>
                         <div style="margin-bottom: 12px;">
                             <div style="color: #333; border-bottom: 1px solid #ccc; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; padding-bottom: 2px;">PROFESSIONAL SUMMARY</div>
@@ -1236,9 +1237,9 @@ The more detailed the job description, the better your AI-customized resume will
                 <div id="creative-preview" class="live-template-preview">
                     <div style="padding: 15px; font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 8px; font-size: 0.75rem; line-height: 1.3;">
                         <div style="text-align: center; margin-bottom: 15px;">
-                            <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 3px; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">John Doe</div>
+                            <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 3px; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">${data.name}</div>
                             <div style="font-size: 0.8rem; opacity: 0.9;">Creative Professional</div>
-                            <div style="font-size: 0.7rem; opacity: 0.8;">john.doe@email.com | Portfolio: johndoe.design</div>
+                            <div style="font-size: 0.7rem; opacity: 0.8;">${data.email} | Portfolio: johndoe.design</div>
                         </div>
                         <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 8px; margin-bottom: 10px; backdrop-filter: blur(5px);">
                             <div style="font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;">💫 Creative Vision</div>
@@ -1272,8 +1273,8 @@ The more detailed the job description, the better your AI-customized resume will
                 <div id="minimal-preview" class="live-template-preview">
                     <div style="padding: 15px; font-family: Helvetica, sans-serif; background: white; border-radius: 8px; font-size: 0.75rem; line-height: 1.5; font-weight: 300;">
                         <div style="border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 15px;">
-                            <div style="font-size: 1.1rem; color: #333; margin-bottom: 3px; font-weight: 300; letter-spacing: -0.5px;">John Doe</div>
-                            <div style="color: #777; font-size: 0.7rem;">john.doe@email.com • (555) 123-4567</div>
+                            <div style="font-size: 1.1rem; color: #333; margin-bottom: 3px; font-weight: 300; letter-spacing: -0.5px;">${data.name}</div>
+                            <div style="color: #777; font-size: 0.7rem;">${data.email} • ${data.phone}</div>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <div style="color: #333; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Summary</div>
@@ -1307,7 +1308,7 @@ The more detailed the job description, the better your AI-customized resume will
                 <div id="executive-preview" class="live-template-preview">
                     <div style="background: white; border-radius: 8px; font-size: 0.75rem; overflow: hidden;">
                         <div style="background: #2c3e50; color: white; padding: 12px; text-align: center;">
-                            <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 3px;">John Doe</div>
+                            <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 3px;">${data.name}</div>
                             <div style="font-size: 0.8rem; opacity: 0.9;">Chief Executive Officer</div>
                             <div style="font-size: 0.7rem; opacity: 0.8;">john.doe@company.com</div>
                         </div>
@@ -1709,6 +1710,76 @@ The more detailed the job description, the better your AI-customized resume will
     </div>
 
     <script>
+// Normalize AI JSON and render into resume preview
+function renderResumeContent(aiContent) {
+    const parsed = typeof aiContent === "string" ? JSON.parse(aiContent) : aiContent;
+
+    const realData = {
+        name: "Dinesh Kumar Appala",
+        email: "rishika.karabuja17@gmail.com",
+        phone: "+1 (331) 253-9514",
+        linkedin: "www.linkedin.com/in/rishika-karabuja",
+        summary: parsed.customized_summary || "",
+        experience: (parsed.optimized_experience || []).map(exp => ({
+            job_title: exp.title || exp.job_title,
+            company: exp.company || "",
+            duration: exp.date || exp.dates,
+            achievements: exp.achievements || []
+        })),
+        skills: parsed.prioritized_skills || []
+    };
+
+    const html = `
+        <div class="header-section">
+            <div class="name">${realData.name}</div>
+            <div class="contact">${realData.email} | ${realData.phone} | ${realData.linkedin}</div>
+        </div>
+        <div class="section">
+            <div class="section-title">Professional Summary</div>
+            <div>${realData.summary}</div>
+        </div>
+        <div class="section">
+            <div class="section-title">Experience</div>
+            ${realData.experience.map(exp => `
+                <div style="margin-bottom: 10px;">
+                    <strong>${exp.job_title}</strong> - ${exp.company} 
+                    <span style="color:#888;">(${exp.duration})</span>
+                    <ul>
+                        ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('')}
+        </div>
+        <div class="section">
+            <div class="section-title">Skills</div>
+            <div class="skills-grid">
+                ${realData.skills.map(skill => `<div class="skill-item">${skill}</div>`).join('')}
+            </div>
+        </div>
+    `;
+
+    document.getElementById("resumeContent").innerHTML = html;
+    document.getElementById("resumePreview").style.display = "block";
+}
+
+// Call this when AI finishes
+function handleAICustomization(aiOutput) {
+    console.log("✅ Injecting AI output into resume...");
+    renderResumeContent(aiOutput.customized_content || aiOutput);
+}
+
+// Fix template selection null.classList issue
+function selectTemplate(template) {
+    document.querySelectorAll('.template-card').forEach(card => {
+        if (card.dataset.template === template) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+    });
+    console.log("🎨 Template applied:", template);
+}
+
 // Day 9: Enhanced Error Handling System
 
 
@@ -2193,7 +2264,8 @@ function validateFileUpload(file) {
 }
         
         // Main Resume Processing
-       async function processResume() {
+     // Main Resume Processing
+async function processResume() {
     // Day 9: Enhanced input validation
     const validationErrors = validateInputs();
     if (validationErrors.length > 0) {
@@ -2214,97 +2286,101 @@ function validateFileUpload(file) {
     
     const jobDescription = document.getElementById('jobDescription').value.trim();
             
-            showLoading('Analyzing your resume and job description...');
-            updateProgress(30);
-            
-            try {
-                // Step 1: Upload and parse resume
-                console.log('Uploading resume...');
-                const formData = new FormData();
-                formData.append('file', selectedFile);
-                
-                const resumeResponse = await fetch('http://localhost:8000/api/upload-resume', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!resumeResponse.ok) {
-                    throw new Error(`Resume upload failed: ${resumeResponse.status}`);
-                }
-                
-                resumeData = await resumeResponse.json();
-                console.log('Resume processed:', resumeData);
-                updateProgress(50);
-                
-                // Step 2: Analyze job description
-                showLoading('AI is analyzing the job requirements...');
-                console.log('Analyzing job description...');
-                const jobFormData = new FormData();
-                jobFormData.append('job_description', jobDescription);
-                
-                const jobResponse = await fetch('http://localhost:8000/api/analyze-job', {
-                    method: 'POST',
-                    body: jobFormData
-                });
-                
-                if (!jobResponse.ok) {
-                    throw new Error(`Job analysis failed: ${jobResponse.status}`);
-                }
-                
-                jobData = await jobResponse.json();
-                console.log('Job analyzed:', jobData);
-                updateProgress(70);
-                
-                // Step 3: AI Customization
-                showLoading('AI is customizing your resume...');
-                await customizeWithAI();
-                
-                updateProgress(100);
-                hideLoading();
-                showAdvancedFeatures();
-                showSuccess('Resume analysis complete! Choose a template and generate your preview.');
-                
-            } catch (error) {
-                console.error('Error:', error);
-                hideLoading();
-                showError(`Processing failed: ${error.message}`);
-                updateProgress(0);
-            }
+    showLoading('Analyzing your resume and job description...');
+    updateProgress(30);
+    
+    try {
+        // Step 1: Upload and parse resume
+        console.log('Uploading resume...');
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        
+        const resumeResponse = await fetch('http://localhost:8001/api/upload-resume', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!resumeResponse.ok) {
+            throw new Error(`Resume upload failed: ${resumeResponse.status}`);
         }
         
-        // AI Customization
-        async function customizeWithAI() {
-            if (!resumeData || !jobData) {
-                throw new Error('Please process resume and job description first!');
-            }
-            
-            try {
-                const formData = new FormData();
-                formData.append('resume_text', resumeData.extracted_text);
-                formData.append('job_description', document.getElementById('jobDescription').value);
-                formData.append('customization_level', 'moderate');
-                
-                const response = await fetch('http://localhost:8000/api/customize-resume', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`AI customization failed: ${response.status}`);
-                }
-                
-                aiCustomizedData = await response.json();
-                console.log('AI Customization Result:', aiCustomizedData);
-                
-                // Update button states
-                updateCoverLetterButton();
-                updateAnalyzeButton();
-                
-            } catch (error) {
-                console.error('AI Customization Error:', error);
-                throw error;
-            }
+        resumeData = await resumeResponse.json();
+        console.log('✅ Resume Data Received:', resumeData);
+        console.log('📄 Extracted Text Length:', resumeData.extracted_text?.length);
+        console.log('📄 First 200 chars:', resumeData.extracted_text?.substring(0, 200));
+        updateProgress(50);
+        
+        // Step 2: Analyze job description
+        showLoading('AI is analyzing the job requirements...');
+        console.log('Analyzing job description...');
+        const jobFormData = new FormData();
+        jobFormData.append('job_description', jobDescription);
+        
+        const jobResponse = await fetch('http://localhost:8001/api/analyze-job', {
+            method: 'POST',
+            body: jobFormData
+        });
+        
+        if (!jobResponse.ok) {
+            throw new Error(`Job analysis failed: ${jobResponse.status}`);
         }
+        
+        jobData = await jobResponse.json();
+        console.log('✅ Job Data Received:', jobData);
+        updateProgress(70);
+        
+        // Step 3: AI Customization
+        showLoading('AI is customizing your resume...');
+        await customizeWithAI();
+        
+        updateProgress(100);
+        hideLoading();
+        showAdvancedFeatures();
+        showSuccess('Resume analysis complete! Choose a template and generate your preview.');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        hideLoading();
+        showError(`Processing failed: ${error.message}`);
+        updateProgress(0);
+    }
+}
+
+// AI Customization
+async function customizeWithAI() {
+    if (!resumeData || !jobData) {
+        throw new Error('Please process resume and job description first!');
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('resume_text', resumeData.extracted_text);
+        formData.append('job_description', document.getElementById('jobDescription').value);
+        formData.append('customization_level', 'moderate');
+        
+        const response = await fetch('http://localhost:8001/api/customize-resume', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`AI customization failed: ${response.status}`);
+        }
+        
+        aiCustomizedData = await response.json();
+        console.log('✅ AI Customized Data:', aiCustomizedData);
+        console.log('🔧 Customized Content:', aiCustomizedData.customized_content);
+        console.log('🔧 Content Type:', typeof aiCustomizedData.customized_content);
+        
+        // Update button states
+        updateCoverLetterButton();
+        updateAnalyzeButton();
+        
+    } catch (error) {
+        console.error('AI Customization Error:', error);
+        throw error;
+    }
+}
         
         function showAdvancedFeatures() {
             document.getElementById('advancedFeatures').style.display = 'block';
@@ -2317,6 +2393,26 @@ function validateFileUpload(file) {
                 showError('Please process your resume with AI first!');
                 return;
             }
+ console.log('🎨 Generating preview with data:', aiCustomizedData);
+    
+    // Parse AI customized content
+    let parsedContent;
+    try {
+        // Try to parse as JSON
+        parsedContent = JSON.parse(aiCustomizedData.customized_content);
+        console.log('✅ Parsed JSON content:', parsedContent);
+    } catch (e) {
+        console.log('⚠️ JSON parsing failed, using fallback');
+        // IMPROVED FALLBACK - extract actual resume data
+        parsedContent = {
+            name: extractNameFromResume(resumeData.extracted_text),
+            email: extractEmailFromResume(resumeData.extracted_text),
+            phone: extractPhoneFromResume(resumeData.extracted_text),
+            customized_summary: extractSummaryFromText(aiCustomizedData.customized_content),
+            optimized_experience: extractExperienceFromText(aiCustomizedData.customized_content),
+            prioritized_skills: extractSkillsFromData()
+        };
+    }
             
             showLoading('Generating your customized resume...');
             
@@ -2360,6 +2456,40 @@ function validateFileUpload(file) {
         }
         
         // Helper functions for content extraction
+function extractNameFromResume(resumeText) {
+    if (!resumeText) return "${data.name}";
+    
+    // Look for common name patterns at the beginning
+    const lines = resumeText.split('\n');
+    for (let line of lines.slice(0, 10)) {
+        line = line.trim();
+        // Skip empty lines and common headers
+        if (line.length > 3 && line.length < 50 && 
+            !line.toLowerCase().includes('resume') && 
+            !line.toLowerCase().includes('cv') &&
+            !line.includes('@') && !line.includes('(')) {
+            return line;
+        }
+    }
+    return "${data.name}";
+}
+
+function extractEmailFromResume(resumeText) {
+    if (!resumeText) return "${data.email}";
+    
+    const emailRegex = /[\w\.-]+@[\w\.-]+\.\w+/g;
+    const matches = resumeText.match(emailRegex);
+    return matches ? matches[0] : "${data.email}";
+}
+
+function extractPhoneFromResume(resumeText) {
+    if (!resumeText) return "${data.phone}";
+    
+    const phoneRegex = /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
+    const matches = resumeText.match(phoneRegex);
+    return matches ? matches[0] : "${data.phone}";
+}
+
         function extractSummaryFromText(text) {
             // Extract or create a professional summary
             const lines = text.split('\n');
@@ -2407,172 +2537,59 @@ function validateFileUpload(file) {
         }
         
         // Resume HTML Generation
-        function generateResumeHTML(content, template) {
-            const resumeContent = document.getElementById('resumeContent');
-            
-            if (template === 'modern') {
-                resumeContent.innerHTML = generateModernTemplate(content);
-                resumeContent.className = 'resume-modern';
-            } else if (template === 'classic') {
-                resumeContent.innerHTML = generateClassicTemplate(content);
-                resumeContent.className = 'resume-classic';
-            } else if (template === 'creative') {
-                resumeContent.innerHTML = generateCreativeTemplate(content);
-                resumeContent.className = 'resume-creative';
-            } else if (template === 'minimal') {
-                resumeContent.innerHTML = generateMinimalTemplate(content);
-                resumeContent.className = 'resume-minimal';
-            }
-        }
-
-        function generateModernTemplate(content) {
-            const skills = Array.isArray(content.prioritized_skills) 
-                ? content.prioritized_skills 
-                : ['Data Analysis', 'Problem Solving', 'Communication', 'Leadership'];
-                
-            const experiences = Array.isArray(content.optimized_experience)
-                ? content.optimized_experience
-                : [{ 
-                    title: "Professional Experience", 
-                    company: "Previous Company", 
-                    duration: "2022 - Present",
-                    description: "Key achievements and responsibilities tailored for this role." 
-                }];
-
-            return `
-                <div class="header-section">
-                    <div class="name">John Doe</div>
-                    <div class="contact">
-                        john.doe@email.com | (555) 123-4567 | LinkedIn: /in/johndoe | Portfolio: johndoe.dev
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">Professional Summary</div>
-                    <p>${content.customized_summary || 'AI-optimized professional summary tailored for this specific role, highlighting relevant experience and skills that match the job requirements.'}</p>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">Professional Experience</div>
-                    ${experiences.map(exp => `
-                        <div class="experience-item" style="margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div class="job-title">${exp.title || 'Senior Professional'}</div>
-                                <div class="date">${exp.duration || '2022 - Present'}</div>
-                            </div>
-                            <div class="company" style="margin-bottom: 10px;">${exp.company || 'Previous Company'}</div>
-                            <ul style="margin-top: 10px; color: #555;">
-                                <li>${exp.description || 'Led strategic initiatives that improved organizational efficiency and delivered measurable results.'}</li>
-                                <li>Collaborated with cross-functional teams to implement data-driven solutions that enhanced operational performance by 25%</li>
-                                <li>Managed complex projects from conception to completion, ensuring adherence to timelines and budget constraints</li>
-                                <li>Mentored junior team members and fostered a culture of continuous learning and improvement</li>
-                            </ul>
-                        </div>
-                    `).join('')}
-                </div>
-
-                <div class="section">
-                    <div class="section-title">Core Skills</div>
-                    <div class="skills-grid">
-                        ${skills.map(skill => `<div class="skill-item">${skill}</div>`).join('')}
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">Education</div>
-                    <div class="experience-item">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="job-title">Master of Business Analytics</div>
-                            <div class="date">2024</div>
-                        </div>
-                        <div class="company">University Name</div>
-                        <p style="margin-top: 8px; color: #666;">Relevant Coursework: Data Mining, Statistical Analysis, Machine Learning, Business Intelligence</p>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">Certifications</div>
-                    <ul style="color: #555; margin-left: 0; padding-left: 20px;">
-                        <li>Microsoft Power BI Data Analyst Associate</li>
-                        <li>Google Analytics Individual Qualification</li>
-                        <li>AWS Certified Cloud Practitioner</li>
-                    </ul>
-                </div>
-            `;
-        }
-
-        function generateClassicTemplate(content) {
-            const skills = Array.isArray(content.prioritized_skills) 
-                ? content.prioritized_skills 
-                : ['Data Analysis', 'Project Management', 'Strategic Planning', 'Team Leadership'];
-
-            return `
-                <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 style="margin: 0; font-size: 2rem; color: #333; text-transform: uppercase; letter-spacing: 1px;">JOHN DOE</h1>
-                    <p style="margin: 10px 0 0 0; color: #666; font-size: 1rem;">john.doe@email.com | (555) 123-4567 | LinkedIn: /in/johndoe</p>
-                </div>
-
-                <div style="margin-bottom: 25px;">
-                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px;">PROFESSIONAL SUMMARY</h2>
-                    <p style="margin-top: 15px; line-height: 1.7; text-align: justify;">${content.customized_summary || 'Accomplished professional with extensive experience in data analysis and strategic planning. Proven track record of delivering high-impact projects and driving organizational growth through innovative solutions and effective team leadership.'}</p>
-                </div>
-
-                <div style="margin-bottom: 25px;">
-                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px;">PROFESSIONAL EXPERIENCE</h2>
-                    <div style="margin-top: 15px;">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                            <p style="font-weight: bold; margin: 0; font-size: 1rem;">SENIOR BUSINESS ANALYST</p>
-                            <p style="margin: 0; color: #666; font-style: italic;">2022 - Present</p>
-                        </div>
-                        <p style="margin: 5px 0; color: #666; font-style: italic;">Fortune 500 Company, New York, NY</p>
-                        <ul style="margin-top: 10px; line-height: 1.6;">
-                            <li>Spearheaded data-driven initiatives that resulted in 30% improvement in operational efficiency</li>
-                            <li>Developed comprehensive analytical frameworks for strategic decision-making processes</li>
-                            <li>Collaborated with executive leadership to identify and capitalize on market opportunities</li>
-                            <li>Led cross-functional teams of 8+ members to deliver complex projects on time and within budget</li>
-                        </ul>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                            <p style="font-weight: bold; margin: 0; font-size: 1rem;">BUSINESS ANALYST</p>
-                            <p style="margin: 0; color: #666; font-style: italic;">2020 - 2022</p>
-                        </div>
-                        <p style="margin: 5px 0; color: #666; font-style: italic;">Technology Solutions Inc., San Francisco, CA</p>
-                        <ul style="margin-top: 10px; line-height: 1.6;">
-                            <li>Conducted comprehensive market research and competitive analysis for strategic planning</li>
-                            <li>Designed and implemented reporting systems that enhanced decision-making capabilities</li>
-                            <li>Optimized business processes resulting in 25% reduction in operational costs</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 25px;">
-                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px;">CORE COMPETENCIES</h2>
-                    <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
-                        ${skills.map(skill => `<div style="padding: 5px 0;">• ${skill}</div>`).join('')}
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 25px;">
-                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px;">EDUCATION</h2>
-                    <div style="margin-top: 15px;">
-                        <p style="font-weight: bold; margin: 0;">MASTER OF BUSINESS ANALYTICS</p>
-                        <p style="margin: 5px 0; color: #666;">University Name, 2024</p>
-                        <p style="margin: 5px 0; font-style: italic;">Magna Cum Laude | GPA: 3.8/4.0</p>
-                    </div>
-                </div>
-
-                <div>
-                    <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 0.5px;">CERTIFICATIONS</h2>
-                    <div style="margin-top: 15px;">
-                        <p style="margin: 5px 0;">• Microsoft Certified: Power BI Data Analyst Associate</p>
-                        <p style="margin: 5px 0;">• Google Analytics Individual Qualification (IQ)</p>
-                        <p style="margin: 5px 0;">• Project Management Professional (PMP) - In Progress</p>
-                    </div>
-                </div>
-            `;
-        }
+function generateResumeHTML(content, template) {
+    const resumeContent = document.getElementById('resumeContent');
+    
+    // Parse the AI customized content
+    let parsedAIContent;
+    try {
+        parsedAIContent = JSON.parse(aiCustomizedData.customized_content);
+    } catch (e) {
+        console.log('Using fallback parsing');
+        parsedAIContent = content;
+    }
+    
+    // Use REAL data from AI customization
+    const realData = {
+        name: "Dinesh Kumar Appala",
+        email: "dinesh.appala@email.com",
+        phone: "(331) 253-9514", 
+        linkedin: "linkedin.com/in/dinesh-appala",
+        summary: parsedAIContent.customized_summary || "Data Engineer with 6+ years of experience",
+        experience: parsedAIContent.optimized_experience || [],
+        skills: parsedAIContent.prioritized_skills || ["SQL", "Azure Data Factory", "ETL"],
+        education: {
+            degree: "Master of Business Analytics",
+            school: "Lewis University",
+            year: "2024",
+            details: "Illinois, USA"
+        },
+        certifications: [
+            "AWS Certified",
+            "Azure Certified",
+            "GCP Certified", 
+            "Snowflake for Developers"
+        ]
+    };
+    
+    console.log('Using real data for template:', realData);
+    
+    // Generate template-specific HTML
+    if (template === 'modern') {
+        resumeContent.innerHTML = generateModernTemplate(realData, colorSchemes[selectedColor], selectedFont);
+        resumeContent.className = 'resume-modern';
+    } else if (template === 'classic') {
+        resumeContent.innerHTML = generateClassicTemplate(realData, colorSchemes[selectedColor], selectedFont);
+        resumeContent.className = 'resume-classic';
+    } else if (template === 'creative') {
+        resumeContent.innerHTML = generateCreativeTemplate(realData, colorSchemes[selectedColor], selectedFont);
+        resumeContent.className = 'resume-creative';
+    } else if (template === 'minimal') {
+        resumeContent.innerHTML = generateMinimalTemplate(realData, colorSchemes[selectedColor], selectedFont);
+        resumeContent.className = 'resume-minimal';
+    }
+}
+       
 
         function generateCreativeTemplate(content) {
             const skills = Array.isArray(content.prioritized_skills) 
@@ -2582,9 +2599,9 @@ function validateFileUpload(file) {
             return `
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; margin: -40px -40px 30px -40px; position: relative; overflow: hidden;">
                     <div style="position: relative; z-index: 2;">
-                        <h1 style="margin: 0; font-size: 2.5rem; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">JOHN DOE</h1>
+                        <h1 style="margin: 0; font-size: 2.5rem; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${data.name}</h1>
                         <p style="margin: 10px 0 0 0; font-size: 1.2rem; opacity: 0.9;">Creative Professional & Strategic Innovator</p>
-                        <p style="margin: 5px 0 0 0; opacity: 0.8;">john.doe@email.com | (555) 123-4567 | Portfolio: johndoe.design</p>
+                        <p style="margin: 5px 0 0 0; opacity: 0.8;">${data.email} | ${data.phone} | Portfolio: johndoe.design</p>
                     </div>
                     <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
                 </div>
@@ -2667,8 +2684,8 @@ function validateFileUpload(file) {
 
             return `
                 <div style="border-bottom: 1px solid #eee; padding-bottom: 30px; margin-bottom: 30px;">
-                    <h1 style="margin: 0; font-size: 2.2rem; color: #333; font-weight: 300; letter-spacing: -1px;">John Doe</h1>
-                    <p style="margin: 8px 0 0 0; color: #777; font-size: 1rem; font-weight: 300;">john.doe@email.com • (555) 123-4567 • linkedin.com/in/johndoe</p>
+                    <h1 style="margin: 0; font-size: 2.2rem; color: #333; font-weight: 300; letter-spacing: -1px;">${data.name}</h1>
+                    <p style="margin: 8px 0 0 0; color: #777; font-size: 1rem; font-weight: 300;">${data.email} • ${data.phone} • linkedin.com/in/johndoe</p>
                 </div>
 
                 <div style="margin-bottom: 40px;">
@@ -2760,7 +2777,7 @@ function validateFileUpload(file) {
                 formData.append('position_title', positionTitle);
                 formData.append('tone', selectedTone);
                 
-                const response = await fetch('http://localhost:8000/api/generate-cover-letter', {
+                const response = await fetch( 'http://localhost:8001/api/generate-cover-letter', {
                     method: 'POST',
                     body: formData
                 });
@@ -2784,53 +2801,75 @@ function validateFileUpload(file) {
         
         function showCoverLetterResult() {
             // Show export button
-            document.getElementById('exportCoverLetterBtn').style.display = 'inline-block';
+            // Show export button safely
+const exportBtn = document.getElementById('exportCoverLetterBtn');
+if (exportBtn) {
+    exportBtn.style.display = 'inline-block';
+} else {
+    console.log('Export button not found, skipping...');
+}
             
             // Create or update cover letter display
-            let coverLetterDisplay = document.getElementById('coverLetterDisplay');
-            if (!coverLetterDisplay) {
-                coverLetterDisplay = document.createElement('div');
-                coverLetterDisplay.id = 'coverLetterDisplay';
-                coverLetterDisplay.style.cssText = `
-                    background: white;
-                    padding: 30px;
-                    margin-top: 20px;
-                    border-radius: 10px;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                    border-left: 4px solid #27ae60;
-                `;
-                document.getElementById('cover-letter-tab').appendChild(coverLetterDisplay);
-            }
-            
-            try {
-                const content = JSON.parse(generatedCoverLetter.cover_letter_content);
-                coverLetterDisplay.innerHTML = `
-                    <h3 style="color: #27ae60; margin-bottom: 20px;">✅ Your AI-Generated Cover Letter</h3>
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
-                        <strong>Subject Line:</strong> ${content.suggested_subject_line || 'Application for ' + document.getElementById('positionTitle').value}
-                    </div>
-                    <div style="line-height: 1.8; color: #333;">
-                        <p><strong>Dear Hiring Manager,</strong></p>
-                        <p>${content.opening_paragraph || 'AI-generated opening paragraph'}</p>
-                        ${Array.isArray(content.body_paragraphs) ? 
-                            content.body_paragraphs.map(para => `<p>${para}</p>`).join('') :
-                            '<p>AI-generated body content highlighting your relevant experience and skills.</p>'
-                        }
-                        <p>${content.closing_paragraph || 'AI-generated closing paragraph with call to action'}</p>
-                        <p><strong>Sincerely,<br>John Doe</strong></p>
-                    </div>
-                `;
-            } catch (e) {
-                coverLetterDisplay.innerHTML = `
-                    <h3 style="color: #27ae60; margin-bottom: 20px;">✅ Your AI-Generated Cover Letter</h3>
-                    <div style="line-height: 1.8; color: #333; white-space: pre-line;">
-                        ${generatedCoverLetter.cover_letter_content}
-                    </div>
-                `;
-            }
-            
-            showSuccess('Cover letter generated successfully!');
+    // SAFETY CHECK - ensure the export section exists
+    let coverLetterExportSection = document.getElementById('coverLetterExportSection');
+    if (coverLetterExportSection) {
+        coverLetterExportSection.style.display = 'block';
+    }
+    
+    // Create or update cover letter display
+    let coverLetterDisplay = document.getElementById('coverLetterDisplay');
+    if (!coverLetterDisplay) {
+        coverLetterDisplay = document.createElement('div');
+        coverLetterDisplay.id = 'coverLetterDisplay';
+        coverLetterDisplay.style.cssText = `
+            background: white;
+            padding: 30px;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #27ae60;
+        `;
+        
+        // Find the cover letter tab and append
+        const coverLetterTab = document.getElementById('cover-letter-tab');
+        if (coverLetterTab) {
+            coverLetterTab.appendChild(coverLetterDisplay);
+        } else {
+            console.error('Cover letter tab not found');
+            return;
         }
+    }
+    
+    // Rest of the function remains the same...
+    try {
+        const content = JSON.parse(generatedCoverLetter.cover_letter_content);
+        coverLetterDisplay.innerHTML = `
+            <h3 style="color: #27ae60; margin-bottom: 20px;">✅ Your AI-Generated Cover Letter</h3>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                <strong>Subject Line:</strong> ${content.suggested_subject_line || 'Application for ' + document.getElementById('positionTitle').value}
+            </div>
+            <div style="line-height: 1.8; color: #333;">
+                <p><strong>Dear Hiring Manager,</strong></p>
+                <p>${content.opening_paragraph || 'AI-generated opening paragraph'}</p>
+                ${Array.isArray(content.body_paragraphs) ? 
+                    content.body_paragraphs.map(para => `<p>${para}</p>`).join('') :
+                    '<p>AI-generated body content highlighting your relevant experience and skills.</p>'
+                }
+                <p>${content.closing_paragraph || 'AI-generated closing paragraph with call to action'}</p>
+                <p><strong>Sincerely,<br>${data.name}</strong></p>
+            </div>
+        `;
+    } catch (e) {
+        coverLetterDisplay.innerHTML = `
+            <h3 style="color: #27ae60; margin-bottom: 20px;">✅ Your AI-Generated Cover Letter</h3>
+            <div style="line-height: 1.8; color: #333; white-space: pre-line;">
+                ${generatedCoverLetter.cover_letter_content}
+            </div>
+        `;
+    }
+    
+    showSuccess('Cover letter generated successfully!');
+   }
         
         // Resume Analytics
         async function analyzeResumeScore() {
@@ -2846,7 +2885,7 @@ function validateFileUpload(file) {
                 formData.append('resume_text', resumeData.extracted_text);
                 formData.append('job_description', document.getElementById('jobDescription').value);
                 
-                const response = await fetch('http://localhost:8000/api/analyze-resume-score', {
+                const response = await fetch( 'http://localhost:8001/api/analyze-resume-score', {
                     method: 'POST',
                     body: formData
                 });
@@ -2938,7 +2977,7 @@ function validateFileUpload(file) {
                 formData.append('improvement_suggestions', '');
                 formData.append('user_email', 'anonymous');
                 
-                const response = await fetch('http://localhost:8000/api/submit-feedback', {
+                const response = await fetch( 'http://localhost:8001/api/submit-feedback', {
                     method: 'POST',
                     body: formData
                 });
@@ -3446,7 +3485,7 @@ async function selectTemplate(templateName) {
         formData.append('template_name', templateName);
         formData.append('save_selection', 'true');
         
-        const response = await fetch('http://localhost:8000/api/select-template', {
+        const response = await fetch( 'http://localhost:8001/api/select-template', {
             method: 'POST',
             body: formData
         });
@@ -3490,7 +3529,7 @@ async function getTemplateRecommendations() {
         formData.append('industry', ''); // Auto-detect
         formData.append('experience_level', 'mid'); // Default
         
-        const response = await fetch('http://localhost:8000/api/template-recommendations', {
+        const response = await fetch( 'http://localhost:8001/api/template-recommendations', {
             method: 'POST',
             body: formData
         });
@@ -3611,7 +3650,7 @@ async function generateMultipleTemplates() {
         formData.append('job_description', document.getElementById('jobDescription').value);
         formData.append('template_list', 'modern,classic,minimal'); // Generate top 3
         
-        const response = await fetch('http://localhost:8000/api/generate-multiple-templates', {
+        const response = await fetch( 'http://localhost:8001/api/generate-multiple-templates', {
             method: 'POST',
             body: formData
         });
@@ -3695,7 +3734,7 @@ async function generateEnhancedPreview() {
         formData.append('resume_text', resumeData.extracted_text);
         formData.append('job_description', document.getElementById('jobDescription').value);
         
-        const response = await fetch('http://localhost:8000/api/template-preview', {
+        const response = await fetch( 'http://localhost:8001/api/template-preview', {
             method: 'POST',
             body: formData
         });
@@ -3750,7 +3789,7 @@ async function saveTemplateSelection() {
         formData.append('template_name', selectedTemplate);
         formData.append('customizations', JSON.stringify(customizations));
         
-        const response = await fetch('http://localhost:8000/api/apply-template-customizations', {
+        const response = await fetch( 'http://localhost:8001/api/apply-template-customizations', {
             method: 'POST',
             body: formData
         });
@@ -3835,3 +3874,157 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
+
+
+  function generateModernTemplate(data, colorScheme, font) {
+    return `
+      <div class="header-section" style="font-family:${font};">
+        <div class="name">${data.name}</div>
+        <div class="contact">${data.email} | ${data.phone} | ${data.linkedin}</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Professional Summary</div>
+        <p>${data.summary}</p>
+      </div>
+      <div class="section">
+        <div class="section-title">Experience</div>
+        <ul>
+          ${data.experience.map(exp => `
+            <li>
+              <strong>${exp.job_title}</strong> – ${exp.company} (${exp.duration})
+              <ul>
+                ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
+              </ul>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <div class="section">
+        <div class="section-title">Skills</div>
+        <div class="skills-grid">
+          ${data.skills.map(skill => `<div class="skill-item">${skill}</div>`).join('')}
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Education</div>
+        <p>${data.education.degree}, ${data.education.school} (${data.education.year})</p>
+        <p>${data.education.details}</p>
+      </div>
+      <div class="section">
+        <div class="section-title">Certifications</div>
+        <ul>
+          ${data.certifications.map(cert => `<li>${cert}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  function generateClassicTemplate(data, colorScheme, font) {
+    return `
+      <div style="text-align:center; font-family:${font};">
+        <h1 style="text-transform:uppercase;">${data.name}</h1>
+        <p>${data.email} | ${data.phone} | ${data.linkedin}</p>
+      </div>
+      <h2>Professional Summary</h2>
+      <p>${data.summary}</p>
+      <h2>Experience</h2>
+      <ul>
+        ${data.experience.map(exp => `
+          <li>
+            <strong>${exp.job_title}</strong> – ${exp.company} (${exp.duration})
+            <ul>
+              ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
+            </ul>
+          </li>
+        `).join('')}
+      </ul>
+      <h2>Skills</h2>
+      <ul>${data.skills.map(skill => `<li>${skill}</li>`).join('')}</ul>
+      <h2>Education</h2>
+      <p>${data.education.degree}, ${data.education.school} (${data.education.year})</p>
+      <h2>Certifications</h2>
+      <ul>${data.certifications.map(cert => `<li>${cert}</li>`).join('')}</ul>
+    `;
+  }
+
+  function generateCreativeTemplate(data, colorScheme, font) {
+    return `
+      <div style="text-align:center; font-family:${font}; background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:10px;">
+        <h1>${data.name}</h1>
+        <p>${data.email} | ${data.phone} | ${data.linkedin}</p>
+      </div>
+      <div style="margin-top:15px;">
+        <h2>✨ Summary</h2>
+        <p>${data.summary}</p>
+      </div>
+      <div>
+        <h2>🚀 Experience</h2>
+        <ul>
+          ${data.experience.map(exp => `
+            <li>
+              <strong>${exp.job_title}</strong> – ${exp.company} (${exp.duration})
+              <ul>
+                ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
+              </ul>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <div>
+        <h2>🎯 Skills</h2>
+        <ul>${data.skills.map(skill => `<li>${skill}</li>`).join('')}</ul>
+      </div>
+    `;
+  }
+
+  function generateMinimalTemplate(data, colorScheme, font) {
+    return `
+      <div style="font-family:${font};">
+        <h1>${data.name}</h1>
+        <p>${data.email} • ${data.phone} • ${data.linkedin}</p>
+        <h2>Summary</h2>
+        <p>${data.summary}</p>
+        <h2>Experience</h2>
+        <ul>
+          ${data.experience.map(exp => `
+            <li>
+              <strong>${exp.job_title}</strong> – ${exp.company} (${exp.duration})
+              <ul>
+                ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
+              </ul>
+            </li>
+          `).join('')}
+        </ul>
+        <h2>Skills</h2>
+        <p>${data.skills.join(', ')}</p>
+        <h2>Education</h2>
+        <p>${data.education.degree}, ${data.education.school} (${data.education.year})</p>
+      </div>
+    `;
+  }
+
+  function generateExecutiveTemplate(data, colorScheme, font) {
+    return `
+      <div style="font-family:${font}; border-left:5px solid ${colorScheme.primary}; padding-left:15px;">
+        <h1 style="color:${colorScheme.primary};">${data.name}</h1>
+        <p>${data.email} | ${data.phone} | ${data.linkedin}</p>
+        <h2>Summary</h2>
+        <p>${data.summary}</p>
+        <h2>Experience</h2>
+        ${data.experience.map(exp => `
+          <div style="margin-bottom:10px;">
+            <h3>${exp.job_title}</h3>
+            <p>${exp.company} | ${exp.duration}</p>
+            <ul>${exp.achievements.map(a => `<li>${a}</li>`).join('')}</ul>
+          </div>
+        `).join('')}
+        <h2>Skills</h2>
+        <ul>${data.skills.map(skill => `<li>${skill}</li>`).join('')}</ul>
+        <h2>Education</h2>
+        <p>${data.education.degree}, ${data.education.school} (${data.education.year})</p>
+        <h2>Certifications</h2>
+        <ul>${data.certifications.map(cert => `<li>${cert}</li>`).join('')}</ul>
+      </div>
+    `;
+  }
